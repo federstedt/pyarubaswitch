@@ -8,7 +8,7 @@ setuptools.setup(
     version="0.0.1",
     author="Daniel Federstedt",
     author_email="dfederstedt@gmail.com",
-    description="requests based REST-API-Client for aruba switches",
+    description="python requests based REST-API-Client for aruba switches",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/federstedt/pyarubaswitch",
