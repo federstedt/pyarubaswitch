@@ -5,13 +5,13 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="pyarubaswitch",
-    version="0.0.3",
+    version="0.0.1",
     author="Daniel Federstedt",
     author_email="dfederstedt@gmail.com",
     description="requests based REST-API-Client for aruba switches",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/pypa/sampleproject",
+    url="https://github.com/federstedt/pyarubaswitch",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
