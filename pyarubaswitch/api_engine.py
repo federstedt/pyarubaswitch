@@ -70,6 +70,7 @@ class PyAosSwitch(object):
             self.session = requests.session()
 
         login_data = {"userName": self.username, "password": self.password}
+        print("Logging in to switch...")
         if self.verbose:
             print(f'Logging into: {self.login_url}, with: {login_data}')
 
@@ -91,6 +92,7 @@ class PyAosSwitch(object):
         if self.session == None:
             print("No session need to login first, before you can logout")
         else:
+            print("Logging out...")
             try:
                 logout = self.session.delete(
                     self.api_url + "login-sessions", timeout=self.timeout)
@@ -102,6 +104,7 @@ class PyAosSwitch(object):
 
     def get(self, sub_url):
         '''GET requests to the API. uses base-url + incoming-url call. Uses token from login function.'''
+        print("performing get call...")
         return self.invoke("GET", sub_url)
 
     def put(self):
