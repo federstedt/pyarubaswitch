@@ -1,4 +1,4 @@
-from pyarubaswitch.aruba_switch_client import PyAosClient
+from pyarubaswitch.aruba_switch_client import ArubaSwitchClient
 from pyarubaswitch.api_engine import PyAosSwitch
 
 __all__ = [

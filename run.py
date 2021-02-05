@@ -4,7 +4,7 @@ from workflows.get_base_info import BaseInfoGetter
 def main():
     print("Lets go!")
     # via yaml
-    run_1 = BaseInfoGetter("vars.yaml")
+    run_1 = BaseInfoGetter("vars.yaml", verbose=True)
     # with args
 
     # with input
