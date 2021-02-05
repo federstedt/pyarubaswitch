@@ -28,17 +28,10 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class PyAosSwitch(object):
 
-    def __init__(self, ip_addr, username, password, version="v4", SSL=False, verbose=False, timeout=10, validate_ssl=False, ssl_login=False):
+    def __init__(self, ip_addr, username, password, SSL=False, verbose=False, timeout=10, validate_ssl=False, rest_version=7):
         '''ArubaOS-Switch API client. '''
-        # use ssl only for login ?
-        if ssl_login:
-            self.login_protocol = 'https'
-        else:
-            self.login_protocol = 'http'
-        # if ssl then always use https for login also, otherwise quite pointless
         if SSL:
             self.protocol = 'https'
-            self.login_protocol = 'https'
         else:
             self.protocol = 'http'
 
@@ -49,39 +42,34 @@ class PyAosSwitch(object):
         # set to Exeption if there is a error with getting version or login
         self.error = None
         self.validate_ssl = validate_ssl
-        self.version = version
+        # set rest-api version
+        self.version = "v" + str(rest_version)
 
         self.cookie = None
         self.api_url = f'{self.protocol}://{self.ip_addr}/rest/{self.version}/'
-        self.login_url = f'{self.login_protocol}://{self.ip_addr}/rest/{self.version}/login-sessions'
         self.username = username
         self.password = password
 
         if self.verbose:
             print(f"Settings:")
             print(
-                f"protcol: {self.protocol} , login-protocol: {self.login_protocol} , validate-sslcert: {self.validate_ssl}")
+                f"protcol: {self.protocol} , validate-sslcert: {self.validate_ssl}")
             print(f"timeout: {self.timeout}, api-version: {self.version}")
-            print(f"api-url: {self.api_url} , login-url: {self.login_url}")
+            print(f"api-url: {self.api_url}")
 
     def login(self):
         '''Login to switch with username and password, get token. Return token '''
         if self.session == None:
             self.session = requests.session()
-
+        url = self.api_url + "login-sessions"
         login_data = {"userName": self.username, "password": self.password}
-        print("Logging in to switch...")
         if self.verbose:
-            print(f'Logging into: {self.login_url}, with: {login_data}')
+            print(f'Logging into: {url}, with: {login_data}')
 
         try:
-            # TODO: testa för prestanda? ,headers={'Connection':'close'})
-            r = self.session.post(self.login_url, data=json.dumps(
+            r = self.session.post(url, data=json.dumps(
                 login_data), timeout=self.timeout, verify=self.validate_ssl)
             r.raise_for_status()
-            # OLD WAY: self.cookie = {'cookie': json_response ['cookie']}
-            # TODO: testar lägga till close på connection
-            #self.cookie['Connection'] = 'close'
         except Exception as e:
             if self.error == None:
                 self.error = {}
@@ -92,11 +80,11 @@ class PyAosSwitch(object):
         if self.session == None:
             print("No session need to login first, before you can logout")
         else:
-            print("Logging out...")
             try:
                 logout = self.session.delete(
                     self.api_url + "login-sessions", timeout=self.timeout)
                 logout.raise_for_status()
+                self.session.close()
             except Exception as e:
                 if self.error == None:
                     self.error = {}
@@ -104,7 +92,6 @@ class PyAosSwitch(object):
 
     def get(self, sub_url):
         '''GET requests to the API. uses base-url + incoming-url call. Uses token from login function.'''
-        print("performing get call...")
         return self.invoke("GET", sub_url)
 
     def put(self):
@@ -127,6 +114,7 @@ class PyAosSwitch(object):
         except Exception as e:
             print(e)
             self.logout()
+            self.session.close()
             exit(1)
 
 
@@ -134,7 +122,7 @@ class APIuser(object):
     '''Base class for APIusage objects. Contains all the stuff a API-worker needs to get it's data 
     from the SwitchClient. Can be passed an API-client object OR login information to be used for getting data. '''
 
-    def __init__(self, switch_ip=None, username=None, password=None, apiclient=None, SSL=False, verbose=False, timeout=10, validate_ssl=False, ssl_login=False):
+    def __init__(self, switch_ip=None, username=None, password=None, apiclient=None, SSL=False, verbose=False, timeout=10, validate_ssl=False):
 
         if (switch_ip == None or username == None or password == None) and apiclient == None:
             print("Error! you must either pass along login details or a apiclient object")
@@ -144,12 +132,11 @@ class APIuser(object):
             self.username = username
             self.password = password
             self.SSL = SSL
-            self.ssl_login = ssl_login
             self.timeout = timeout
             self.verbose = verbose
             self.validate_ssl = validate_ssl
             self.api_client = PyAosSwitch(
-                switch_ip, self.username, self.password, SSL=self.SSL, verbose=self.verbose, timeout=self.timeout, validate_ssl=self.validate_ssl, ssl_login=self.ssl_login)
+                switch_ip, self.username, self.password, SSL=self.SSL, verbose=self.verbose, timeout=self.timeout, validate_ssl=self.validate_ssl)
             self.api_passed = False
         else:
             self.api_client = apiclient

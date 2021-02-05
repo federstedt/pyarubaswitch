@@ -4,6 +4,12 @@ Python based REST-API client for Aruba switches (not ArubaOSX).
 
 See workflows for examples on how to use.
 
+### Requirements
+Only tested with REST-API version 7 on aruba switch. The older REST-APIs where very slow anyhow.
+See https://asp.arubanetworks.com for latest firmware.
+You can check firmware version here: 
+http:///switch-ip-adress/rest/version
+
 ### Installation 
 ```
 pip install pyarubaswitch
@@ -36,10 +42,7 @@ To use validate ssl:
 ```
 ssl_client = ArubaSwitchClient("192.168.1.4","username","password",SSL=True,validate_ssl=True)
 ```
-To use ssl only for login. https is slow performing for all calls. So if you dont consider the rest of the data sensitive use this.
-```
-ssl_client = ArubaSwitchClient("192.168.1.4","username","password",ssl_login=True)
-```
+
 
 The runners in workslows can also be used with a variable file in yaml-format like so:
 ```
@@ -48,4 +51,19 @@ password: "supersecretpassword"
 switches:
   - "192.168.1.4"
   - "192.168.1.5"
+```
+### How to generate self-signed cert on switch from cli 
+```
+Configuration example: 
+    (config)# crypto pki identity-profile Test_Profile subject
+    Enter Common Name(CN) : myTestSwitch
+    Enter Org Unit(OU) : myOrgUnit
+    Enter Org Name(O) : myOrg
+    Enter Locality(L) : myLocation
+    Enter State(ST) : myState
+    Enter Country(C) : NL
+    (config)# crypto pki enroll-self-signed certificate-name Test_Certificate
+    or : crypto pki enroll-self-signed certificate-name test2 key-type ecdsa
+    (config)# web-management ssl
+
 ```

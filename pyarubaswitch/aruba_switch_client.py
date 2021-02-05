@@ -16,17 +16,18 @@ from pyarubaswitch.get_loop_protect import LoopProtect
 
 class ArubaSwitchClient(object):
 
-    def __init__(self, switch_ip, username, password, SSL=False, verbose=False, timeout=10, validate_ssl=False, ssl_login=False):
+    def __init__(self, switch_ip, username, password, SSL=False, verbose=False, timeout=10, validate_ssl=False, rest_version=7):
         self.switch_ip = switch_ip
         self.username = username
         self.password = password
         self.SSL = SSL
-        self.ssl_login = ssl_login
         self.timeout = timeout
         self.verbose = verbose
         self.validate_ssl = validate_ssl
+        self.rest_version = rest_version
         self.api_client = PyAosSwitch(
-            switch_ip, self.username, self.password, SSL=self.SSL, verbose=self.verbose, timeout=self.timeout, validate_ssl=self.validate_ssl, ssl_login=self.ssl_login)
+            switch_ip, self.username, self.password, SSL=self.SSL, verbose=self.verbose, timeout=self.timeout,
+            validate_ssl=self.validate_ssl, rest_version=self.rest_version)
 
     def get_system_status(self):
         '''Returns SystemInfo object with name, firmware status etc'''

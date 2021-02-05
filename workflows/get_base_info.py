@@ -11,7 +11,7 @@ class BaseInfoGetter(Runner):
             if self.verbose == True:
                 print(f"Getting info from {switch}")
             switch_run = ArubaSwitchClient(
-                switch, self.username, self.password, verbose=self.verbose)
+                switch, self.username, self.password, self.SSL, self.verbose, self.timeout, self.validate_ssl, self.rest_version)
             if self.verbose == True:
                 print("logging in...")
             switch_run.api_client.login()

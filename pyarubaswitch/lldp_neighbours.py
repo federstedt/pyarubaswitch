@@ -27,7 +27,7 @@ class LLdpInfo(APIuser):
             if is_a_switch == True:
                 #DEBUG: print('Switch: ' + 'localport: ' + x['local_port'] + ' remoteport: ' + x['port_id'] + ' neighbor name: ' + x['chassis_id'] + ' neighbor ip: ' + x['remote_management_address']['address'] + '\n')
                 switch = LldpSwitch(
-                    x['local_port'], x['port_id'], x['chassis_id'], x['remote_management_address']['address'])
+                    x['local_port'], x['port_id'], x['chassis_id'], x['remote_management_address'][0]['address'])
                 # switches.append({'local_port': x['local_port'],
                 #                 'remote_port': x['port_id'],
                 #                 'name': x['chassis_id'],
@@ -39,7 +39,7 @@ class LLdpInfo(APIuser):
             if is_an_ap == True:
                 #DEBUG: print('AccessPoint: ' + 'localport: ' + x['local_port'] + ' AP-name: ' + x['system_name'])
                 ap = LldpAccessPoints(
-                    x['local_port'], x['system_name'], x['remote_management_address']['address'])
+                    x['local_port'], x['system_name'], x['remote_management_address'][0]['address'])
                 # access_points.append({'local_port': x['local_port'],
                 #                      'name': x['system_name'],
                 #                      'ip': x['remote_management_address']['address']})
