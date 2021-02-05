@@ -57,6 +57,13 @@ class PyAosSwitch(object):
         self.username = username
         self.password = password
 
+        if self.verbose:
+            print(f"Settings:")
+            print(
+                f"protcol: {self.protocol} , login-protocol: {self.login_protocol} , validate-sslcert: {self.validate_ssl}")
+            print(f"timeout: {self.timeout}, api-version: {self.version}")
+            print(f"api-url: {self.api_url} , login-url: {self.login_url}")
+
     def login(self):
         '''Login to switch with username and password, get token. Return token '''
         if self.session == None:

@@ -22,7 +22,7 @@ class PortChecker(Runner):
             if self.verbose == True:
                 print(f"Getting info from {switch}")
             switch_run = PyAosClient(
-                switch, self.username, self.password)
+                switch, self.username, self.password, verbose=self.verbose)
             if self.verbose == True:
                 print("logging in...")
             switch_run.api_client.login()
