@@ -14,7 +14,7 @@ from pyarubaswitch.get_loop_protect import LoopProtect
 # SSL=False, verbose=False, timeout=10, validate_ssl=False, ssl_login=False
 
 
-class PyAosClient(object):
+class ArubaSwitchClient(object):
 
     def __init__(self, switch_ip, username, password, SSL=False, verbose=False, timeout=10, validate_ssl=False, ssl_login=False):
         self.switch_ip = switch_ip

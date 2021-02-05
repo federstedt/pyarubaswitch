@@ -12,8 +12,8 @@ pip install pyarubaswitch
 ### Basic Usage examples
 
 ```
-from pyarubaswitch import PyAosClient
-client = PyAosClient("192.168.1.4","username","password")
+from pyarubaswitch import ArubaSwitchClient
+client = ArubaSwitchClient("192.168.1.4","username","password")
 
 
 client.get_lldp_aps()              client.get_port_vlan()             client.get_system_status()
@@ -30,15 +30,15 @@ name: switch-name, hw: J9774A, fw: YA.16.10.0007, sn: XXXXXXX
 **note** that method above uses HTTP and is not secure. To use HTTPS you must first install a certificate on the switch and then use the client with ssl.
 To use ssl for all calls, no validation of cert:
 ```
-ssl_client = PyAosClient("192.168.1.4","username","password",SSL=True)  
+ssl_client = ArubaSwitchClient("192.168.1.4","username","password",SSL=True)  
 ```
 To use validate ssl:
 ```
-ssl_client = PyAosClient("192.168.1.4","username","password",SSL=True,validate_ssl=True)
+ssl_client = ArubaSwitchClient("192.168.1.4","username","password",SSL=True,validate_ssl=True)
 ```
 To use ssl only for login. https is slow performing for all calls. So if you dont consider the rest of the data sensitive use this.
 ```
-ssl_client = PyAosClient("192.168.1.4","username","password",ssl_login=True)
+ssl_client = ArubaSwitchClient("192.168.1.4","username","password",ssl_login=True)
 ```
 
 The runners in workslows can also be used with a variable file in yaml-format like so:

@@ -4,7 +4,7 @@
 # TODO: make desired_checker check so that list contains ints and NOT strings
 
 from pyarubaswitch.common_ops import shorten_numberlist
-from pyarubaswitch.aruba_switch_client import PyAosClient
+from pyarubaswitch.aruba_switch_client import ArubaSwitchClient
 from workflows.runner import Runner
 
 
@@ -21,7 +21,7 @@ class PortChecker(Runner):
         for switch in self.switches:
             if self.verbose == True:
                 print(f"Getting info from {switch}")
-            switch_run = PyAosClient(
+            switch_run = ArubaSwitchClient(
                 switch, self.username, self.password, verbose=self.verbose)
             if self.verbose == True:
                 print("logging in...")
