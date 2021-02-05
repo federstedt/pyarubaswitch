@@ -10,6 +10,8 @@ See https://asp.arubanetworks.com for latest firmware.
 You can check firmware version here: 
 http:///switch-ip-adress/rest/version
 
+Also requires the requests module.
+
 ### Installation 
 ```
 pip install pyarubaswitch
