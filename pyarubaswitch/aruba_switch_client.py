@@ -11,8 +11,6 @@ from pyarubaswitch.get_snmpv3_info import Snmpv3Info
 from pyarubaswitch.get_sntp import SntpInfo
 from pyarubaswitch.get_loop_protect import LoopProtect
 
-# SSL=False, verbose=False, timeout=10, validate_ssl=False, ssl_login=False
-
 
 class ArubaSwitchClient(object):
 
