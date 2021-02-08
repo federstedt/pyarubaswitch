@@ -34,7 +34,11 @@ client.get_loop_protected_ports()
 
 client.get_system_status()
 name: switch-name, hw: J9774A, fw: YA.16.10.0007, sn: XXXXXXX
+
+client.logout()
 ```
+Always do .logout() after your done with API calls. Otherwise the switch might run out of API-sessions and you must either reset rest-api interface on the switch or wait for the session timer to run out.
+
 **note** that method above uses HTTP and is not secure. To use HTTPS you must first install a certificate on the switch and then use the client with ssl.
 To use ssl for all calls, no validation of cert:
 ```
