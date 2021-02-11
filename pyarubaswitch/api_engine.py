@@ -116,28 +116,3 @@ class PyAosSwitch(object):
                 self.error = {}
             self.error["invoke_error"] = e
             #DEBUG: print(f"error in engine: {self.error}")
-
-
-class APIuser(object):
-    '''Base class for APIusage objects. Contains all the stuff a API-worker needs to get it's data 
-    from the SwitchClient. Can be passed an API-client object OR login information to be used for getting data. '''
-
-    def __init__(self, switch_ip=None, username=None, password=None, apiclient=None, SSL=False, verbose=False, timeout=10, validate_ssl=False):
-
-        if (switch_ip == None or username == None or password == None) and apiclient == None:
-            print("Error! you must either pass along login details or a apiclient object")
-            exit(0)
-        if apiclient == None:
-            self.switch_ip = switch_ip
-            self.username = username
-            self.password = password
-            self.SSL = SSL
-            self.timeout = timeout
-            self.verbose = verbose
-            self.validate_ssl = validate_ssl
-            self.api_client = PyAosSwitch(
-                switch_ip, self.username, self.password, SSL=self.SSL, verbose=self.verbose, timeout=self.timeout, validate_ssl=self.validate_ssl)
-            self.api_passed = False
-        else:
-            self.api_client = apiclient
-            self.api_passed = True
