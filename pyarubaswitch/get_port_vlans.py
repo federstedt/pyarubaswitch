@@ -1,38 +1,38 @@
 # get vlans for specified port
-from pyarubaswitch.api_engine import APIuser
 
 
-class Vlaninfo(APIuser):
+class Vlaninfo(object):
+
+    def __init__(self, api_client):
+        self.api_client = api_client
 
     @property
     def vlan_data(self):
         ''' returns port objects with vlan info.'''
         vlan_info = self.api_client.get('vlans-ports')
-        # if api_session was created within the object itself. Logout as it will not be reused outside this object
-        if self.api_passed == False:
-            self.api_client.logout()
+
         return vlan_info
 
     def port_vlans(self, interface):
         ''' Returns vlans configured on specified interface '''
+        if not self.api_client.error:
+            vlanelements = self.vlan_data['vlan_port_element']
+            untag = []
+            tag = []
+            for x in vlanelements:
+                port = x['port_id']
+                vlanid = x['vlan_id']
+                portmode = x['port_mode']
 
-        vlanelements = self.vlan_data['vlan_port_element']
-        untag = []
-        tag = []
-        for x in vlanelements:
-            port = x['port_id']
-            vlanid = x['vlan_id']
-            portmode = x['port_mode']
+                if port == interface:
+                    # print('Portid:',port,'vlanid:',vlanid,'portmode:',portmode)   # Troubleshooting? print this...
+                    if portmode == 'POM_UNTAGGED':
+                        untag.append(vlanid)
+                    if portmode == 'POM_TAGGED_STATIC':
+                        tag.append(vlanid)
 
-            if port == interface:
-                # print('Portid:',port,'vlanid:',vlanid,'portmode:',portmode)   # Troubleshooting? print this...
-                if portmode == 'POM_UNTAGGED':
-                    untag.append(vlanid)
-                if portmode == 'POM_TAGGED_STATIC':
-                    tag.append(vlanid)
-
-        port_object = Port(interface, untag, tag)
-        return port_object
+            port_object = Port(interface, untag, tag)
+            return port_object
 
 
 class Port(object):

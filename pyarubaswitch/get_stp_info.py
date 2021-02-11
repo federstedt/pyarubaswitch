@@ -1,17 +1,17 @@
-from pyarubaswitch.api_engine import APIuser
 
+class StpInfo(object):
 
-class StpInfo(APIuser):
+    def __init__(self, api_client):
+        self.api_client = api_client
 
     def get_stp_info(self):
         jsondata = self.api_client.get('stp')
-        if self.api_passed == False:
-            self.api_client.logout()
 
-        stp_info = STP(jsondata["is_enabled"],
-                       jsondata["priority"], jsondata["mode"])
+        if not self.api_client.error:
+            stp_info = STP(jsondata["is_enabled"],
+                           jsondata["priority"], jsondata["mode"])
 
-        return stp_info
+            return stp_info
 
 
 class STP(object):

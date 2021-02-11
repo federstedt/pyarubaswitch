@@ -1,8 +1,9 @@
 # Get lldp neighbours, return port information for those neighbours
-from pyarubaswitch.api_engine import APIuser
 
+class LLdpInfo(object):
 
-class LLdpInfo(APIuser):
+    def __init__(self, api_client):
+        self.api_client = api_client
 
     def get_neighbors(self, capability="all"):
         '''Returns switch / ap object based on lldp discovery.'''
@@ -12,45 +13,44 @@ class LLdpInfo(APIuser):
         capability = capability.lower()
         lldp_json = self.api_client.get('lldp/remote-device')
         # if api_session was created within the object itself. Logout as it will not be reused outside this object
-        if self.api_passed == False:
-            self.api_client.logout()
 
-        elements = lldp_json['lldp_remote_device_element']
+        if not self.api_client.error:
+            elements = lldp_json['lldp_remote_device_element']
 
-        switches = []
-        access_points = []
+            switches = []
+            access_points = []
 
-        for x in elements:
+            for x in elements:
 
-            is_a_switch = x['capabilities_enabled']['bridge']
+                is_a_switch = x['capabilities_enabled']['bridge']
 
-            if is_a_switch == True:
-                #DEBUG: print('Switch: ' + 'localport: ' + x['local_port'] + ' remoteport: ' + x['port_id'] + ' neighbor name: ' + x['chassis_id'] + ' neighbor ip: ' + x['remote_management_address']['address'] + '\n')
-                switch = LldpSwitch(
-                    x['local_port'], x['port_id'], x['chassis_id'], x['remote_management_address'][0]['address'])
-                # switches.append({'local_port': x['local_port'],
-                #                 'remote_port': x['port_id'],
-                #                 'name': x['chassis_id'],
-                #                 'ip': x['remote_management_address']['address']})
-                switches.append(switch)
+                if is_a_switch == True:
+                    #DEBUG: print('Switch: ' + 'localport: ' + x['local_port'] + ' remoteport: ' + x['port_id'] + ' neighbor name: ' + x['chassis_id'] + ' neighbor ip: ' + x['remote_management_address']['address'] + '\n')
+                    switch = LldpSwitch(
+                        x['local_port'], x['port_id'], x['chassis_id'], x['remote_management_address'][0]['address'])
+                    # switches.append({'local_port': x['local_port'],
+                    #                 'remote_port': x['port_id'],
+                    #                 'name': x['chassis_id'],
+                    #                 'ip': x['remote_management_address']['address']})
+                    switches.append(switch)
 
-            is_an_ap = x['capabilities_enabled']['wlan_access_point']
+                is_an_ap = x['capabilities_enabled']['wlan_access_point']
 
-            if is_an_ap == True:
-                #DEBUG: print('AccessPoint: ' + 'localport: ' + x['local_port'] + ' AP-name: ' + x['system_name'])
-                ap = LldpAccessPoints(
-                    x['local_port'], x['system_name'], x['remote_management_address'][0]['address'])
-                # access_points.append({'local_port': x['local_port'],
-                #                      'name': x['system_name'],
-                #                      'ip': x['remote_management_address']['address']})
-                access_points.append(ap)
+                if is_an_ap == True:
+                    #DEBUG: print('AccessPoint: ' + 'localport: ' + x['local_port'] + ' AP-name: ' + x['system_name'])
+                    ap = LldpAccessPoints(
+                        x['local_port'], x['system_name'], x['remote_management_address'][0]['address'])
+                    # access_points.append({'local_port': x['local_port'],
+                    #                      'name': x['system_name'],
+                    #                      'ip': x['remote_management_address']['address']})
+                    access_points.append(ap)
 
-        if capability == "all":
-            return({'ap_list': access_points, 'switch_list': switches})
-        elif capability == "ap":
-            return access_points
-        elif capability == "switch":
-            return switches
+            if capability == "all":
+                return({'ap_list': access_points, 'switch_list': switches})
+            elif capability == "ap":
+                return access_points
+            elif capability == "switch":
+                return switches
 
 
 class LldpNeighbour(object):

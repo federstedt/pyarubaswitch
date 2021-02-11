@@ -112,10 +112,10 @@ class PyAosSwitch(object):
             json_response = r.json()
             return(json_response)
         except Exception as e:
-            print(e)
-            self.logout()
-            self.session.close()
-            exit(1)
+            if self.error == None:
+                self.error = {}
+            self.error["invoke_error"] = e
+            #DEBUG: print(f"error in engine: {self.error}")
 
 
 class APIuser(object):

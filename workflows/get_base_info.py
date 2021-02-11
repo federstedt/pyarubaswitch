@@ -41,18 +41,22 @@ class BaseInfoGetter(Runner):
             sntp_info = switch_run.get_sntp()
             print(sntp_info)
 
-            if self.verbose:
-                print("Getting loop-protected ports")
             loop_pports = switch_run.get_loop_protected_ports()
-            # makes the list shorter with 1,2,3,5,6 -> 1-3,5-6
-            loop_pports = shorten_numberlist(loop_pports)
-            print(loop_pports)
+            if not switch_run.api_client.error:
+                if self.verbose:
+                    print("Getting loop-protected ports")
+                # makes the list shorter with 1,2,3,5,6 -> 1-3,5-6
+                loop_pports = shorten_numberlist(loop_pports)
+                print(loop_pports)
 
             if self.verbose:
                 print("Getting unprotected ports")
             un_loop_ports = switch_run.get_non_loop_protected_ports()
-            un_loop_ports = shorten_numberlist(un_loop_ports)
-            print(un_loop_ports)
+
+            if not switch_run.api_client:
+                un_loop_ports = shorten_numberlist(un_loop_ports)
+                print(un_loop_ports)
+
             if self.verbose:
                 print("Getting lldp based info")
             self.get_lldp_info(switch_run)

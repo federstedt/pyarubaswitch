@@ -1,19 +1,18 @@
-# get system status information
-from pyarubaswitch.api_engine import APIuser
 
+class SystemStatus(object):
 
-class SystemStatus(APIuser):
+    def __init__(self, api_client):
+        self.api_client = api_client
 
     def get_system_info(self):
         sys_json = self.api_client.get('system/status')
-        # if api_session was created within the object itself. Logout as it will not be reused outside this object
-        if self.api_passed == False:
-            self.api_client.logout()
 
-        sysinfo = SystemInfo(sys_json["name"], sys_json['hardware_revision'],
-                             sys_json['firmware_version'], sys_json['serial_number'])
+        if not self.api_client.error:
 
-        return sysinfo
+            sysinfo = SystemInfo(sys_json["name"], sys_json['hardware_revision'],
+                                 sys_json['firmware_version'], sys_json['serial_number'])
+
+            return sysinfo
 
 
 class SystemInfo(object):
