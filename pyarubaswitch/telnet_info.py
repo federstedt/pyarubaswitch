@@ -9,3 +9,5 @@ class TelnetInfo(object):
 
         if not self.api_client.error:
             return jsondata['is_telnet_server_enabled']
+        elif self.api_client.error:
+            print(self.api_client.error)

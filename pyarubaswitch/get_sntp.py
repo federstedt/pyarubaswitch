@@ -17,6 +17,8 @@ class SntpInfo(object):
                 sntp_servers.append(server_obj)
 
             return sntp_servers
+        elif self.api_client.error:
+            print(self.api_client.error)
 
 
 class SntpServer(object):

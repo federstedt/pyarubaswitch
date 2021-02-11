@@ -10,3 +10,5 @@ class TestClass(object):
         #    self.api_client.logout()
         if not self.api_client.error:
             return api_get
+        elif self.api_client.error:
+            print(self.api_client.error)

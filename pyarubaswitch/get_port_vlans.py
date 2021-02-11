@@ -33,6 +33,8 @@ class Vlaninfo(object):
 
             port_object = Port(interface, untag, tag)
             return port_object
+        elif self.api_client.error:
+            print(self.api_client.error)
 
 
 class Port(object):

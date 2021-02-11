@@ -51,6 +51,8 @@ class LLdpInfo(object):
                 return access_points
             elif capability == "switch":
                 return switches
+        elif self.api_client.error:
+            print(self.api_client.error)
 
 
 class LldpNeighbour(object):

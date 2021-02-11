@@ -12,6 +12,8 @@ class Snmpv3Info(object):
                                  jsondata["is_non_snmpv3_access_readonly"], jsondata["is_snmpv3_messages_only"])
 
             return snmpv3_info
+        elif self.api_client.error:
+            print(self.api_client.error)
 
 
 class Snmpv3(object):

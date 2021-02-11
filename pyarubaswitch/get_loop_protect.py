@@ -15,6 +15,8 @@ class LoopProtect(object):
                     ports.append(port["port_id"])
 
             return ports
+        elif self.api_client.error:
+            print(self.api_client.error)
 
     def get_unprotected_ports(self):
         jsondata = self.api_client.get("loop_protect/ports")
@@ -27,3 +29,5 @@ class LoopProtect(object):
                     ports.append(port["port_id"])
 
             return ports
+        elif self.api_client.error:
+            print(self.api_client.error)

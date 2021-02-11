@@ -13,6 +13,8 @@ class SystemStatus(object):
                                  sys_json['firmware_version'], sys_json['serial_number'])
 
             return sysinfo
+        elif self.api_client.error:
+            print(self.api_client.error)
 
 
 class SystemInfo(object):
