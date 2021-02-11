@@ -8,7 +8,7 @@ from pyarubaswitch.input_parser import InputParser
 class Runner(object):
 
     def __init__(self, config_filepath=None, arg_username=None, arg_password=None,
-                 arg_switches=None, SSL=False, verbose=False, timeout=10, validate_ssl=False, ssl_login=False, rest_version=7):
+                 arg_switches=None, SSL=False, verbose=False, timeout=5, validate_ssl=False, ssl_login=False, rest_version=7):
 
         if arg_username == None and arg_password == None and arg_switches == None:
             args_passed = False

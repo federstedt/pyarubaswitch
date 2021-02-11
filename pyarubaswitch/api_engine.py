@@ -28,7 +28,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class PyAosSwitch(object):
 
-    def __init__(self, ip_addr, username, password, SSL=False, verbose=False, timeout=10, validate_ssl=False, rest_version=7):
+    def __init__(self, ip_addr, username, password, SSL=False, verbose=False, timeout=5, validate_ssl=False, rest_version=7):
         '''ArubaOS-Switch API client. '''
         if SSL:
             self.protocol = 'https'

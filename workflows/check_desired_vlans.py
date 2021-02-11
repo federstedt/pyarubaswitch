@@ -11,7 +11,7 @@ from workflows.runner import Runner
 class PortChecker(Runner):
 
     def __init__(self, desired_untag, desired_tag, config_filepath=None, arg_username=None, arg_password=None,
-                 arg_switches=None, SSL=False, verbose=False, timeout=10, validate_ssl=False):
+                 arg_switches=None, SSL=False, verbose=False, timeout=5, validate_ssl=False):
 
         self.desired_untag = desired_untag
         self.desired_tag = desired_tag
