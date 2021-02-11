@@ -5,7 +5,7 @@ class StpInfo(object):
         self.api_client = api_client
 
     def get_stp_info(self):
-        jsondata = self.api_client.get('stp')
+        jsondata = self.api_client.get('stp!!')
 
         if not self.api_client.error:
             stp_info = STP(jsondata["is_enabled"],

@@ -116,3 +116,6 @@ class PyAosSwitch(object):
                 self.error = {}
             self.error["invoke_error"] = e
             #DEBUG: print(f"error in engine: {self.error}")
+
+    def reset_error(self):
+        self.error = None

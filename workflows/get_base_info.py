@@ -29,6 +29,7 @@ class BaseInfoGetter(Runner):
             if self.verbose:
                 print("Getting STP info")
             stp_info = switch_run.get_stp_info()
+
             print(stp_info)
 
             if self.verbose:
