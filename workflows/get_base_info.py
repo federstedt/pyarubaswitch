@@ -49,6 +49,11 @@ class BaseInfoGetter(Runner):
             print(loop_pports)
 
             if self.verbose:
+                print("Getting unprotected ports")
+            un_loop_ports = switch_run.get_non_loop_protected_ports()
+            un_loop_ports = shorten_numberlist(un_loop_ports)
+            print(un_loop_ports)
+            if self.verbose:
                 print("Getting lldp based info")
             self.get_lldp_info(switch_run)
 

@@ -78,6 +78,11 @@ class ArubaSwitchClient(object):
         loop_protect = LoopProtect(apiclient=self.api_client)
         return loop_protect.get_protected_ports()
 
+    def get_non_loop_protected_ports(self):
+        '''Rerturns list of unprotected ports'''
+        un_loop_protected = LoopProtect(apiclient=self.api_client)
+        return un_loop_protected.get_unprotected_ports()
+
     def logout(self):
         '''Logout from switch '''
         self.api_client.logout()
