@@ -10,7 +10,6 @@ from pyarubaswitch.get_stp_info import StpInfo
 from pyarubaswitch.get_snmpv3_info import Snmpv3Info
 from pyarubaswitch.get_sntp import SntpInfo
 from pyarubaswitch.get_loop_protect import LoopProtect
-from pyarubaswitch.new_test import TestClass
 
 
 class ArubaSwitchClient(object):
@@ -28,11 +27,6 @@ class ArubaSwitchClient(object):
             switch_ip, self.username, self.password, SSL=self.SSL, verbose=self.verbose, timeout=self.timeout,
             validate_ssl=self.validate_ssl, rest_version=self.rest_version)
 
-    def error_test(self):
-        test = TestClass(self.api_client).test_get()
-        # if self.api_client.error:
-        #    print(f"api client error in ArubaSwitchClient class")
-        return test
 
     def get_system_status(self):
         '''Returns SystemInfo object with name, firmware status etc'''
