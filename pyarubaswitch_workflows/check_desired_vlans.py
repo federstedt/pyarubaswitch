@@ -5,7 +5,7 @@
 
 from pyarubaswitch.common_ops import shorten_numberlist
 from pyarubaswitch.aruba_switch_client import ArubaSwitchClient
-from workflows.runner import Runner
+from pyarubaswitch_workflows.runner import Runner
 
 
 class PortChecker(Runner):
