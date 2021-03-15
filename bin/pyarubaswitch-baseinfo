@@ -1,0 +1,18 @@
+#!/usr/bin/python3
+
+
+from pyarubaswitch_workflows.get_base_info import BaseInfoGetter
+
+def main():
+    print("Getting base info from switch")
+    # via yaml
+    run_1 = BaseInfoGetter(verbose=True, SSL=True)
+    # with args
+
+    # with input
+
+    run_1.get_info()
+
+
+if __name__ == "__main__":
+    main()

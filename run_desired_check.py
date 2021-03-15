@@ -1,4 +1,4 @@
-from workflows.check_desired_vlans import PortChecker
+from pyarubaswitch_workflows.check_desired_vlans import PortChecker
 
 
 def main():

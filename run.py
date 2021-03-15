@@ -1,4 +1,4 @@
-from workflows.get_base_info import BaseInfoGetter
+from pyarubaswitch_workflows.get_base_info import BaseInfoGetter
 
 
 def main():
