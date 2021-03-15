@@ -5,11 +5,11 @@ from pyarubaswitch_workflows.get_base_info import BaseInfoGetter
 
 parser = ArgumentParser()
 
-parser.add_argument("--switchip", help="switch-ipaddress")
-parser.add_argument("--username",help="username for switch")
-parser.add_argument("--password",help="password for switch")
-parser.add_argument("--SSL",help="True/False for using SSL in API-calls")
-parser.add_argument("--verbose",help="True/False for verbosemode")
+parser.add_argument("--switchip", "-sw", help="switch-ipaddress")
+parser.add_argument("--username", "-u" ,help="username for switch")
+parser.add_argument("--password", "-p" ,help="password for switch")
+parser.add_argument("--SSL", "-s", help="True/False for using SSL in API-calls")
+parser.add_argument("--verbose", "-v", help="True/False for verbosemode")
 
 args = parser.parse_args()
 
