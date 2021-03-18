@@ -10,11 +10,12 @@ from pyarubaswitch_workflows.runner import Runner
 
 class PortChecker(Runner):
 
-    def __init__(self, desired_untag, desired_tag, config_filepath=None, arg_username=None, arg_password=None,
+    def __init__(self, desired_untag, desired_tag, devicetype, config_filepath=None, arg_username=None, arg_password=None,
                  arg_switches=None, SSL=False, verbose=False, timeout=5, validate_ssl=False):
 
-        self.desired_untag = desired_untag
-        self.desired_tag = desired_tag
+        self.desired_untag = self.convert_to_int(desired_untag)
+        self.desired_tag = self.convert_to_int(desired_tag)
+        self.devicetype = devicetype
         super(PortChecker, self).__init__(config_filepath,
                                           arg_username, arg_password, arg_switches,
                                           SSL, verbose, timeout, validate_ssl)
@@ -31,23 +32,34 @@ class PortChecker(Runner):
 
             lldp_aps = switch_run.get_lldp_aps()
 
-            lldp_switches = switch_run.get_lldp_switches()
+            if self.devicetype == "ap":
+                for ap in lldp_aps:
+                    ap_port_data = switch_run.get_port_vlan(ap.local_port)
+                    print(f"{ap.name}")
+                    print(f"actual vlans: {ap_port_data}")
+                    ap_miss_untag, ap_miss_tag = ap_port_data.check_desired_vlans(
+                        self.desired_untag, self.desired_tag)
+                    print(
+                        f"missing vlans: untag {ap_miss_untag}, tag: {ap_miss_tag} ")
 
-            for ap in lldp_aps:
-                ap_port_data = switch_run.get_port_vlan(ap.local_port)
-                print(f"{ap.name}")
-                print(f"actual vlans: {ap_port_data}")
-                ap_miss_untag, ap_miss_tag = ap_port_data.check_desired_vlans(
-                    self.desired_untag, self.desired_tag)
-                print(
-                    f"missing vlans: untag {ap_miss_untag}, tag: {ap_miss_tag} ")
-            for sw in lldp_switches:
-                switch_port_data = switch_run.get_port_vlan(sw.local_port)
-                print(sw.name)
-                print(f"actual vlans: {switch_port_data}")
-                sw_miss_untag, sw_miss_tag = switch_port_data.check_desired_vlans(
-                    self.desired_untag, self.desired_tag)
-                print(
-                    f"missing vlans:  untag: {sw_miss_untag}, tag: {sw_miss_tag}")
+            if self.devicetype == "switch":    
+                lldp_switches = switch_run.get_lldp_switches()
+                for sw in lldp_switches:
+                    switch_port_data = switch_run.get_port_vlan(sw.local_port)
+                    print(sw.name)
+                    print(f"actual vlans: {switch_port_data}")
+                    sw_miss_untag, sw_miss_tag = switch_port_data.check_desired_vlans(
+                        self.desired_untag, self.desired_tag)
+                    print(
+                        f"missing vlans:  untag: {sw_miss_untag}, tag: {sw_miss_tag}")
 
             switch_run.api_client.logout()
+
+
+    def convert_to_int(self, entry_list):
+        int_list = []
+        for entry in entry_list:
+            entry = int(entry)
+            int_list.append(entry)
+
+        return int_list
