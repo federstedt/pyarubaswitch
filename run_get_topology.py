@@ -11,6 +11,9 @@ def main():
 
     mac_table = run_1.get_mac_table()
     pprint(mac_table)
+    for entry in mac_table:
+        if entry.port_id == "9":
+            print(entry.mac_address)
 
 
 if __name__ == "__main__":
