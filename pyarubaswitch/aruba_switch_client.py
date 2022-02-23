@@ -10,6 +10,7 @@ from pyarubaswitch.get_stp_info import StpInfo
 from pyarubaswitch.get_snmpv3_info import Snmpv3Info
 from pyarubaswitch.get_sntp import SntpInfo
 from pyarubaswitch.get_loop_protect import LoopProtect
+from pyarubaswitch.get_mac_table import MacAddressTable
 
 
 class ArubaSwitchClient(object):
@@ -84,6 +85,11 @@ class ArubaSwitchClient(object):
         '''Rerturns list of unprotected ports'''
         un_loop_protected = LoopProtect(api_client=self.api_client)
         return un_loop_protected.get_unprotected_ports()
+
+    def get_mac_address_table(self):
+        mac_table_info = MacAddressTable(api_client=self.api_client)
+        mac_table = mac_table_info.get_mac_table()
+        return mac_table
 
     def logout(self):
         '''Logout from switch '''
