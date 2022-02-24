@@ -38,17 +38,50 @@ class Runner(object):
         self.rest_version = rest_version
 
         
+    def get_lldp_info(self, api_runner):
+        '''
+        :param api_runner , aruba_switch_client api client object.
+        :return lldp info
+        '''
+        if api_runner.api_client.legacy_api:
+            lldp_data = self.get_lldp_info_legacy(api_runner)
+        else:
+            lldp_data = []
+            if self.verbose == True:
+                print("getting lldp-aps")
 
-    def get_rest_version(self):
-        for switch in self.switches:
-            client = ArubaSwitchClient(
-                    switch, self.username, self.password, self.SSL, self.verbose, self.timeout, self.validate_ssl, self.rest_version)
-            client.login()
+            lldp_aps = api_runner.get_lldp_aps()
+            lldp_data.append(lldp_aps)
+
+            if self.verbose == True:
+                print("getting lldp-switches")
+
+            lldp_switches = api_runner.get_lldp_switches()
+            lldp_data.append(lldp_switches)
+            if not api_runner.api_client.error:
+                if self.verbose == True:
+                    print("getting vlans on Access point ports, and switchports")
+                self.get_vlans_lldp_neighbours(api_runner, lldp_aps, lldp_switches)
         
-            rest_v = client.get_rest_version()
-            if client.api_client.error:
-                print("ERROR getting rest version:")
-                print(client.api_client.error)
-            else:
-                print("No error")
-                return rest_v
+        return lldp_data
+
+    def get_lldp_info_legacy(self, api_runner):
+        '''
+        Legacy API cannot detect capability ie switch or ap 
+        :param api_runner , aruba_switch_client api client object.
+        :return lldp info
+        '''
+        lldp_dev = api_runner.get_lldp_info_legacy()
+        return lldp_dev
+
+
+
+    def get_vlans_lldp_neighbours(self, api_runner, lldp_aps, lldp_switches):
+        for ap in lldp_aps:
+            ap_port_data = api_runner.get_port_vlan(ap.local_port)
+            print(f"{ap.name}")
+            print(ap_port_data)
+        for sw in lldp_switches:
+            switch_port_data = api_runner.get_port_vlan(sw.local_port)
+            print(sw.name)
+            print(switch_port_data)

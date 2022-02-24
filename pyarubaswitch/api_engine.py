@@ -44,11 +44,12 @@ class PyAosSwitch(object):
         self.validate_ssl = validate_ssl
         # set rest-api version
         self.version = "v" + str(rest_version)
-        if rest_version < 7:
-            self.legacy_login = True
+        if rest_version < 6:
+            self.legacy_api = True
         self.cookie = None
 
-        self.api_url = f'{self.protocol}://{self.ip_addr}/rest/{self.version}/'
+        self.set_api_url()
+
         self.username = username
         self.password = password
 
@@ -58,6 +59,10 @@ class PyAosSwitch(object):
                 f"protcol: {self.protocol} , validate-sslcert: {self.validate_ssl}")
             print(f"timeout: {self.timeout}, api-version: {self.version}")
             print(f"api-url: {self.api_url}")
+
+
+    def set_api_url(self):
+        self.api_url = f'{self.protocol}://{self.ip_addr}/rest/{self.version}/'
 
     def login(self):
         '''Login to switch with username and password, get token. Return token '''
@@ -81,7 +86,7 @@ class PyAosSwitch(object):
                     print(f"login success! url: {url}")
                     print("login data:")
                     print(json_resp)
-                if self.legacy_login:
+                if self.legacy_api:
                     self.cookie = json_resp["cookie"]
             else:
                 print("Error login:")
@@ -98,7 +103,7 @@ class PyAosSwitch(object):
         if self.session == None:
             print("No session need to login first, before you can logout")
         else:
-            if self.legacy_login:
+            if self.legacy_api:
                 headers = {'cookie': self.cookie}
             else:
                 headers = None
@@ -113,7 +118,9 @@ class PyAosSwitch(object):
                 self.error["logout_error"] = e
 
     def get_rest_version(self):
-        ''' GET switch RESTAPI version and return as string ie "7" '''
+        ''' GET switch RESTAPI version and return as string ie "7" 
+        :return version latest supportert RESTversion in string format.
+        '''
         if self.session == None:
             self.login()
         url = f"{self.protocol}://{self.ip_addr}/rest/version"
@@ -121,7 +128,7 @@ class PyAosSwitch(object):
         if self.verbose:
             print(f"Getting rest-api version from url: {url}")
 
-        if self.legacy_login:
+        if self.legacy_api:
                 headers = {'cookie': self.cookie}
         else:
             headers = None
@@ -140,6 +147,29 @@ class PyAosSwitch(object):
                 self.error = {}
             self.error['version_error'] = e
 
+    def set_rest_version(self):
+        '''
+        Gets API latest supported apiversion from switch and uses that version for all future calls.
+        '''
+        versions = self.get_rest_version()
+        latest_ver = versions["version_element"][-1]["version"]
+        #remove .X from v1.0  
+
+        split_string = latest_ver.split(".", 1)
+        latest_ver = split_string[0]
+         # set self.api_version to latest supported
+        self.version = latest_ver
+        # refresh api url with latest version
+        self.set_api_url()
+
+        # remove v , convert to int
+        latest_ver = latest_ver.replace("v","")
+        # > ver7 not equals legacy logins without session cookie
+        if int(latest_ver) > 6:
+            self.legacy_api = False
+
+
+
     def get(self, sub_url):
         '''GET requests to the API. uses base-url + incoming-url call. Uses token from login function.'''
         return self.invoke("GET", sub_url)
@@ -155,7 +185,7 @@ class PyAosSwitch(object):
             self.login()
 
         url = self.api_url + sub_url
-        if self.legacy_login:
+        if self.legacy_api:
             headers = {'cookie': self.cookie}
         else:
             headers = None
@@ -169,6 +199,9 @@ class PyAosSwitch(object):
             if self.error == None:
                 self.error = {}
             self.error["invoke_error"] = e
+            if self.verbose:
+                print("ERROR FOUND:")
+                print(self.error)
             #DEBUG: print(f"error in engine: {self.error}")
 
     def reset_error(self):

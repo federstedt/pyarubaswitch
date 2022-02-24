@@ -6,43 +6,39 @@ class LLdpInfo(object):
         self.api_client = api_client
 
     def get_neighbors(self, capability="all"):
-        '''Returns switch / ap object based on lldp discovery.'''
+        '''Returns switch / ap object based on lldp discovery.
+            Requires atleast rest-api version 4.
+        '''
         # Kräver v4 för att funka snyggast, saknas en hel del annars
 
         # converts to lower just in case user specifies uppercase
         capability = capability.lower()
         lldp_json = self.api_client.get('lldp/remote-device')
         # if api_session was created within the object itself. Logout as it will not be reused outside this object
-
         if not self.api_client.error:
             elements = lldp_json['lldp_remote_device_element']
 
             switches = []
             access_points = []
+            
+            # DEBUG:
+            print(elements)
 
             for x in elements:
 
                 is_a_switch = x['capabilities_enabled']['bridge']
 
                 if is_a_switch == True:
-                    #DEBUG: print('Switch: ' + 'localport: ' + x['local_port'] + ' remoteport: ' + x['port_id'] + ' neighbor name: ' + x['chassis_id'] + ' neighbor ip: ' + x['remote_management_address']['address'] + '\n')
-                    switch = LldpSwitch(
-                        x['local_port'], x['port_id'], x['chassis_id'], x['remote_management_address'][0]['address'])
-                    # switches.append({'local_port': x['local_port'],
-                    #                 'remote_port': x['port_id'],
-                    #                 'name': x['chassis_id'],
-                    #                 'ip': x['remote_management_address']['address']})
+                    #TODO: kolla om v7 har name = chassi_id
+                    switch = LldpNeighbour(
+                        local_port=x['local_port'], name=x['system_name'], ip=x['remote_management_address'][0]['address'],remote_port=x['port_id'])
                     switches.append(switch)
 
                 is_an_ap = x['capabilities_enabled']['wlan_access_point']
 
                 if is_an_ap == True:
-                    #DEBUG: print('AccessPoint: ' + 'localport: ' + x['local_port'] + ' AP-name: ' + x['system_name'])
-                    ap = LldpAccessPoints(
-                        x['local_port'], x['system_name'], x['remote_management_address'][0]['address'])
-                    # access_points.append({'local_port': x['local_port'],
-                    #                      'name': x['system_name'],
-                    #                      'ip': x['remote_management_address']['address']})
+                    ap = LldpNeighbour(
+                        local_port=x['local_port'], name=x['system_name'], ip=x['remote_management_address'][0]['address'])
                     access_points.append(ap)
 
             if capability == "all":
@@ -54,27 +50,36 @@ class LLdpInfo(object):
         elif self.api_client.error:
             print(self.api_client.error)
 
+    def get_neighbors_legacy(self):
+        '''
+        Get lldp info using legacy API. 
+        Cannot sort APs from Switches by capability key
+        '''
+        lldp_json = self.api_client.get('lldp/remote-device')
+
+        if not self.api_client.error:
+            lldp_devs = []
+            elements = lldp_json['lldp_remote_device_element']
+
+            print(elements)
+            for e in elements:
+
+                lldp_neighbour = LldpNeighbour(local_port=e["local_port"],name=e["system_name"],remote_port=e["port_id"])
+                lldp_devs.append(lldp_neighbour)
+            
+            return lldp_devs
+        
+
+
 
 class LldpNeighbour(object):
 
-    def __init__(self, local_port, name, ip):
+    def __init__(self, local_port, name, ip=None, remote_port=None):
         self.local_port = local_port
         self.name = name
         self.ip = ip
-
-    def __repr__(self):
-        return f"name: {self.name}, local_port: {self.local_port}, ip_address: {self.ip}"
-
-
-class LldpAccessPoints(LldpNeighbour):
-    pass
-
-
-class LldpSwitch(LldpNeighbour):
-
-    def __init__(self, local_port, remote_port, name, ip):
         self.remote_port = remote_port
-        super(LldpSwitch, self).__init__(local_port, name, ip)
 
     def __repr__(self):
-        return f"name: {self.name}, local_port: {self.local_port},remote_port: {self.remote_port}, ip_address: {self.ip}"
+        return f"name: {self.name}, local_port: {self.local_port}, remote_port: {self.remote_port}, ip_address: {self.ip}"
+

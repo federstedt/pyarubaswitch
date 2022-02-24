@@ -10,7 +10,10 @@ class MacAddressTable(object):
         jsondata = self.api_client.get("mac-table")
 
         if not self.api_client.error:
-            mac_table_entry_elements = jsondata["mac_table_entry_element"]
+            if self.api_client.legacy_api == False:
+                mac_table_entry_elements = jsondata["mac_table_entry_element"]
+            else:
+                mac_table_entry_elements = jsondata["mac-table"]
             mac_address_table = []
             for x in mac_table_entry_elements:
                 mac_addr = MacTableElement(x["mac_address"],x["port_id"],x["vlan_id"])
