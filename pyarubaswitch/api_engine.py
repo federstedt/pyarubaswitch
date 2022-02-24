@@ -44,8 +44,10 @@ class PyAosSwitch(object):
         self.validate_ssl = validate_ssl
         # set rest-api version
         self.version = "v" + str(rest_version)
-
+        if rest_version < 7:
+            self.legacy_login = True
         self.cookie = None
+
         self.api_url = f'{self.protocol}://{self.ip_addr}/rest/{self.version}/'
         self.username = username
         self.password = password
@@ -70,25 +72,73 @@ class PyAosSwitch(object):
             r = self.session.post(url, data=json.dumps(
                 login_data), timeout=self.timeout, verify=self.validate_ssl)
             r.raise_for_status()
+            
+            
+           
+            if r.status_code == 201:
+                json_resp = r.json()
+                if self.verbose:
+                    print(f"login success! url: {url}")
+                    print("login data:")
+                    print(json_resp)
+                if self.legacy_login:
+                    self.cookie = json_resp["cookie"]
+            else:
+                print("Error login:")
+                print(r.status_code)
+
         except Exception as e:
             if self.error == None:
                 self.error = {}
             self.error['login_error'] = e
+
 
     def logout(self):
         '''Logout from the switch. Using token from login function. Makes sure switch doesn't run out of sessions.'''
         if self.session == None:
             print("No session need to login first, before you can logout")
         else:
+            if self.legacy_login:
+                headers = {'cookie': self.cookie}
+            else:
+                headers = None
             try:
                 logout = self.session.delete(
-                    self.api_url + "login-sessions", timeout=self.timeout)
+                    self.api_url + "login-sessions", timeout=self.timeout, headers=headers)
                 logout.raise_for_status()
                 self.session.close()
             except Exception as e:
                 if self.error == None:
                     self.error = {}
                 self.error["logout_error"] = e
+
+    def get_rest_version(self):
+        ''' GET switch RESTAPI version and return as string ie "7" '''
+        if self.session == None:
+            self.login()
+        url = f"{self.protocol}://{self.ip_addr}/rest/version"
+
+        if self.verbose:
+            print(f"Getting rest-api version from url: {url}")
+
+        if self.legacy_login:
+                headers = {'cookie': self.cookie}
+        else:
+            headers = None
+        try:
+            r = self.session.get(url, timeout=self.timeout,verify=self.validate_ssl,headers=headers)
+            r.raise_for_status()
+            json_resp = r.json()
+
+            if self.verbose:
+                print(f"rest-version data:")
+                print(json_resp)
+            return(json_resp)
+        
+        except Exception as e:
+            if self.error == None:
+                self.error = {}
+            self.error['version_error'] = e
 
     def get(self, sub_url):
         '''GET requests to the API. uses base-url + incoming-url call. Uses token from login function.'''
@@ -105,9 +155,13 @@ class PyAosSwitch(object):
             self.login()
 
         url = self.api_url + sub_url
+        if self.legacy_login:
+            headers = {'cookie': self.cookie}
+        else:
+            headers = None
         try:
             r = self.session.request(
-                method, url, timeout=self.timeout, verify=self.validate_ssl)
+                method, url, timeout=self.timeout, verify=self.validate_ssl, headers=headers)
             r.raise_for_status()
             json_response = r.json()
             return(json_response)

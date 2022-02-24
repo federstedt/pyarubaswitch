@@ -34,6 +34,11 @@ class ArubaSwitchClient(object):
         system_info = SystemStatus(api_client=self.api_client)
         return system_info.get_system_info()
 
+    def get_rest_version(self):
+        ''' Returns rest api version '''
+        rest_version = self.api_client.get_rest_version()
+        return rest_version
+
     def get_telnet_server_status(self):
         '''Returns true / false status of telnet server'''
         telnet_status = TelnetInfo(api_client=self.api_client)

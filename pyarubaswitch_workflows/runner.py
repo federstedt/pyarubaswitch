@@ -1,5 +1,5 @@
 
-
+from pyarubaswitch import ArubaSwitchClient
 from pyarubaswitch.config_reader import ConfigReader
 from pyarubaswitch.input_parser import InputParser
 # Sample runner for api
@@ -36,3 +36,19 @@ class Runner(object):
         self.ssl_login = ssl_login
         self.SSL = SSL
         self.rest_version = rest_version
+
+        
+
+    def get_rest_version(self):
+        for switch in self.switches:
+            client = ArubaSwitchClient(
+                    switch, self.username, self.password, self.SSL, self.verbose, self.timeout, self.validate_ssl, self.rest_version)
+            client.login()
+        
+            rest_v = client.get_rest_version()
+            if client.api_client.error:
+                print("ERROR getting rest version:")
+                print(client.api_client.error)
+            else:
+                print("No error")
+                return rest_v

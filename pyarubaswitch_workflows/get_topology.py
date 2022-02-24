@@ -15,6 +15,9 @@ class TopologyMapper(Runner):
             if self.verbose:
                 print("Logging in...")
             switch_client.login()
+            if switch_client.api_client.error:
+                print(switch_client.api_client.error)
+                exit(0)
 
             if self.verbose:
                 print("Getting mac-address table")

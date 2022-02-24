@@ -73,3 +73,9 @@ Configuration example:
     (config)# web-management ssl
 
 ```
+### Very simplle self-signed cert sample with rest-enabled sample
+```
+rest-interface
+crypto pki enroll-self-signed certificate-name sll-self subject common-name switchmgmt
+web-management ssl
+```
