@@ -51,7 +51,7 @@ class TopologyMapper(Runner):
         # uplink file data export
         uplink_header = ["switchip", "name", "port", "remote_port", "ip_address", "Type"]
         # append uplink_ports
-        uplink_file = f"{csv_filename}_uplinks.csv"
+        uplink_file = f"{csv_filename}_netdevices.csv"
         # append ap_ports
         with open(uplink_file, "w", encoding="UTF8") as f:
             writer = csv.writer(f)

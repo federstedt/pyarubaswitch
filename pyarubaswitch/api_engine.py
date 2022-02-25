@@ -43,12 +43,13 @@ class PyAosSwitch(object):
         self.error = None
         self.validate_ssl = validate_ssl
         # set rest-api version
+        self.rest_verion_int = rest_version
         self.version = "v" + str(rest_version)
         if rest_version < 4:
             self.legacy_api = True
         else:
             self.legacy_api = False
-            
+
         self.cookie = None
 
         self.set_api_url()
@@ -175,9 +176,9 @@ class PyAosSwitch(object):
         self.set_api_url()
 
         # remove v , convert to int
-        latest_ver = latest_ver.replace("v","")
+        self.rest_verion_int = int(latest_ver.replace("v",""))
         # > ver7 not equals legacy logins without session cookie
-        if int(latest_ver) > 6:
+        if self.rest_verion_int > 6:
             self.legacy_api = False
 
 

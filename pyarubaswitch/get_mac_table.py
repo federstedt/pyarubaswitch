@@ -10,7 +10,7 @@ class MacAddressTable(object):
         jsondata = self.api_client.get("mac-table")
 
         if not self.api_client.error:
-            if self.api_client.legacy_api == False:
+            if self.api_client.rest_verion_int > 3:
                 mac_table_entry_elements = jsondata["mac_table_entry_element"]
             else:
                 mac_table_entry_elements = jsondata["mac-table"]
