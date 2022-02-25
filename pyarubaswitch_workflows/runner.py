@@ -4,7 +4,6 @@ from pyarubaswitch.config_reader import ConfigReader
 from pyarubaswitch.input_parser import InputParser
 # Sample runner for api
 
-
 class Runner(object):
 
     def __init__(self, config_filepath=None, arg_username=None, arg_password=None,
@@ -38,40 +37,27 @@ class Runner(object):
         self.rest_version = rest_version
 
         
+    def get_lldp_info_sorted(self, api_runner):
+        '''
+        Legacy API cannot detect capability ie switch or ap (pre v4)
+        :param api_runner , aruba_switch_client api client object.
+        :return lldp info
+        '''
+        if api_runner.api_client.legacy_api:
+            print("API running legacy apiversion pre v4.\nWill return unsorted list of devices")
+            lldp_data = self.get_lldp_info(api_runner)
+        else:
+            lldp_data = api_runner.get_lldp_info_sorted()
+            
+        
+        return lldp_data
+
     def get_lldp_info(self, api_runner):
         '''
         :param api_runner , aruba_switch_client api client object.
         :return lldp info
         '''
-        if api_runner.api_client.legacy_api:
-            lldp_data = self.get_lldp_info_legacy(api_runner)
-        else:
-            lldp_data = []
-            if self.verbose == True:
-                print("getting lldp-aps")
-
-            lldp_aps = api_runner.get_lldp_aps()
-            lldp_data.append(lldp_aps)
-
-            if self.verbose == True:
-                print("getting lldp-switches")
-
-            lldp_switches = api_runner.get_lldp_switches()
-            lldp_data.append(lldp_switches)
-            if not api_runner.api_client.error:
-                if self.verbose == True:
-                    print("getting vlans on Access point ports, and switchports")
-                self.get_vlans_lldp_neighbours(api_runner, lldp_aps, lldp_switches)
-        
-        return lldp_data
-
-    def get_lldp_info_legacy(self, api_runner):
-        '''
-        Legacy API cannot detect capability ie switch or ap 
-        :param api_runner , aruba_switch_client api client object.
-        :return lldp info
-        '''
-        lldp_dev = api_runner.get_lldp_info_legacy()
+        lldp_dev = api_runner.get_lldp_info()
         return lldp_dev
 
 

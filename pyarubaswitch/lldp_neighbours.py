@@ -5,9 +5,10 @@ class LLdpInfo(object):
     def __init__(self, api_client):
         self.api_client = api_client
 
-    def get_neighbors(self, capability="all"):
+    def get_neighbours_sorted(self, capability="all"):
         '''Returns switch / ap object based on lldp discovery.
             Requires atleast rest-api version 4.
+            :params capability , defualt="all" get switches and aps. Set to "ap" for aps, or "switch" for switches.
         '''
         # Kräver v4 för att funka snyggast, saknas en hel del annars
 
@@ -17,12 +18,8 @@ class LLdpInfo(object):
         # if api_session was created within the object itself. Logout as it will not be reused outside this object
         if not self.api_client.error:
             elements = lldp_json['lldp_remote_device_element']
-
             switches = []
             access_points = []
-            
-            # DEBUG:
-            print(elements)
 
             for x in elements:
 
@@ -50,7 +47,7 @@ class LLdpInfo(object):
         elif self.api_client.error:
             print(self.api_client.error)
 
-    def get_neighbors_legacy(self):
+    def get_neighbors(self, capability="all"):
         '''
         Get lldp info using legacy API. 
         Cannot sort APs from Switches by capability key
@@ -70,8 +67,6 @@ class LLdpInfo(object):
             return lldp_devs
         
 
-
-
 class LldpNeighbour(object):
 
     def __init__(self, local_port, name, ip=None, remote_port=None):
@@ -79,6 +74,7 @@ class LldpNeighbour(object):
         self.name = name
         self.ip = ip
         self.remote_port = remote_port
+
 
     def __repr__(self):
         return f"name: {self.name}, local_port: {self.local_port}, remote_port: {self.remote_port}, ip_address: {self.ip}"
