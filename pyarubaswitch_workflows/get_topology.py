@@ -24,7 +24,7 @@ class SwitchInfo(object):
 class TopologyMapper(Runner):
 
 
-    # TODO: Gör om så man exporterar alla switchar till ett stort dokuemnt. dvs 2 dokument per site
+
     def export_topology_csv(self, csv_filename, topology_list):
         '''
         Exports topology data to csv-files
@@ -91,8 +91,14 @@ class TopologyMapper(Runner):
             if self.verbose:
                 print("Logging in...")
             switch_client.login()
+            if switch_client.api_client.error:
+                print("ERROR LOGIN:")
+                print(switch_client.api_client.error)
 
             switch_client.set_rest_version()
+            if switch_client.api_client.error:
+                print("ERROR getting rest version:")
+                print(switch_client.api_client.error)
             if self.verbose:
                 print(f"Using rest-version: {switch_client.rest_version}")
 

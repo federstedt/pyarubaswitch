@@ -16,7 +16,7 @@ class MacAddressTable(object):
                 mac_table_entry_elements = jsondata["mac-table"]
             mac_address_table = []
             for x in mac_table_entry_elements:
-                mac_addr = MacTableElement(x["mac_address"],x["port_id"],x["vlan_id"], switch_ip=self.api_client.ip_addr)
+                mac_addr = MacTableElement(x["mac_address"],x["port_id"],x["vlan_id"])
                 mac_address_table.append(mac_addr)
             
             return mac_address_table
@@ -26,10 +26,9 @@ class MacAddressTable(object):
 class MacTableElement(object):
 
     def __repr__(self):
-        return f"mac_address: {self.mac_address}, port_id: {self.port_id}, vlan_id: {self.vlan_id}, switch_ip: {self.switch_ip}"
+        return f"mac_address: {self.mac_address}, port_id: {self.port_id}, vlan_id: {self.vlan_id}"
 
-    def __init__(self, mac_address, port_id, vlan_id, switch_ip=None):
+    def __init__(self, mac_address, port_id, vlan_id):
         self.mac_address = mac_address
         self.port_id = port_id
         self.vlan_id = vlan_id
-        self.switch_ip = switch_ip # ip of switch where mac was found

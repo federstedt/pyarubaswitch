@@ -8,7 +8,7 @@ def main():
 
     topology = run.get_topology()
     
-    run.export_topology_csv("export/labb_env.csv", topology_list=topology)
+    run.export_topology_csv("export/labb_env", topology_list=topology)
   
 
 

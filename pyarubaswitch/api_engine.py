@@ -44,7 +44,7 @@ class PyAosSwitch(object):
         self.validate_ssl = validate_ssl
         # set rest-api version
         self.version = "v" + str(rest_version)
-        if rest_version < 6:
+        if rest_version < 4:
             self.legacy_api = True
         self.cookie = None
 
@@ -91,6 +91,10 @@ class PyAosSwitch(object):
             else:
                 print("Error login:")
                 print(r.status_code)
+                if self.error == None:
+                    self.error = {}
+                    self.error['login_error'] = r
+
 
         except Exception as e:
             if self.error == None:
@@ -135,12 +139,17 @@ class PyAosSwitch(object):
         try:
             r = self.session.get(url, timeout=self.timeout,verify=self.validate_ssl,headers=headers)
             r.raise_for_status()
-            json_resp = r.json()
 
-            if self.verbose:
-                print(f"rest-version data:")
-                print(json_resp)
-            return(json_resp)
+            if r.status_code == 200:
+                json_resp = r.json()
+
+                if self.verbose:
+                    print(f"rest-version data:")
+                    print(json_resp)
+                return(json_resp)
+            else:
+                print(f"Error getting rest version from {url}")
+                print(r)
         
         except Exception as e:
             if self.error == None:
