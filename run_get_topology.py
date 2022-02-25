@@ -1,12 +1,14 @@
 from pyarubaswitch_workflows.get_topology import TopologyMapper
-from pprint import pprint
+
 
 def main():
     print("Lets go!")
     # via yaml
     run = TopologyMapper("vars.yaml", verbose=True, SSL=True, rest_version=2)
 
-    run.get_topology()
+    topology = run.get_topology()
+    
+    run.export_topology_csv("export/labb_env.csv", topology_list=topology)
   
 
 

@@ -28,14 +28,14 @@ class LLdpInfo(object):
                 if is_a_switch == True:
                     #TODO: kolla om v7 har name = chassi_id
                     switch = LldpNeighbour(
-                        local_port=x['local_port'], name=x['system_name'], ip=x['remote_management_address'][0]['address'],remote_port=x['port_id'])
+                        local_port=x['local_port'], name=x['system_name'], ip_address=x['remote_management_address'][0]['address'],remote_port=x['port_id'], switch_ip=self.api_client.ip_addr)
                     switches.append(switch)
 
                 is_an_ap = x['capabilities_enabled']['wlan_access_point']
 
                 if is_an_ap == True:
                     ap = LldpNeighbour(
-                        local_port=x['local_port'], name=x['system_name'], ip=x['remote_management_address'][0]['address'])
+                        local_port=x['local_port'], name=x['system_name'], ip_address=x['remote_management_address'][0]['address'], switch_ip=self.api_client.ip_addr)
                     access_points.append(ap)
 
             if capability == "all":
@@ -54,6 +54,8 @@ class LLdpInfo(object):
         '''
         lldp_json = self.api_client.get('lldp/remote-device')
 
+        
+
         if not self.api_client.error:
             lldp_devs = []
             elements = lldp_json['lldp_remote_device_element']
@@ -61,7 +63,7 @@ class LLdpInfo(object):
             print(elements)
             for e in elements:
 
-                lldp_neighbour = LldpNeighbour(local_port=e["local_port"],name=e["system_name"],remote_port=e["port_id"])
+                lldp_neighbour = LldpNeighbour(local_port=e["local_port"],name=e["system_name"],remote_port=e["port_id"], switch_ip=self.api_client.ip_addr)
                 lldp_devs.append(lldp_neighbour)
             
             return lldp_devs
@@ -69,13 +71,14 @@ class LLdpInfo(object):
 
 class LldpNeighbour(object):
 
-    def __init__(self, local_port, name, ip=None, remote_port=None):
+    def __init__(self, local_port, name, ip_address=None, remote_port=None, switch_ip=None):
         self.local_port = local_port
         self.name = name
-        self.ip = ip
+        self.ip_address = ip_address
         self.remote_port = remote_port
+        self.switch_ip = switch_ip # ip of switch where lldp-device was found
 
 
     def __repr__(self):
-        return f"name: {self.name}, local_port: {self.local_port}, remote_port: {self.remote_port}, ip_address: {self.ip}"
+        return f"name: {self.name}, local_port: {self.local_port}, remote_port: {self.remote_port}, ip_address: {self.ip_address}, switch_ip: {self.switch_ip}"
 
