@@ -46,6 +46,9 @@ class PyAosSwitch(object):
         self.version = "v" + str(rest_version)
         if rest_version < 4:
             self.legacy_api = True
+        else:
+            self.legacy_api = False
+            
         self.cookie = None
 
         self.set_api_url()
