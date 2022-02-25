@@ -10,13 +10,14 @@ class SwitchInfo(object):
 
 
     def __repr__(self):
-        return f"switch_ip: {self.switch_ip}\nclients: {self.clients}\nwireless_clients: {self.wireless_clients}\n lldp_devices: {self.lldp_devices}"
+        return f"switch_ip: {self.switch_ip}\nclients: {self.clients}\nwireless_clients: {self.wireless_clients}\n lldp_devices: {self.lldp_devices}\nnumber_mac_antrys: {self.number_mac_entrys}"
 
-    def __init__(self, switch_ip, clients, wireless_clients, lldp_devices):
+    def __init__(self, switch_ip, clients, wireless_clients, lldp_devices, number_mac_entrys):
         self.switch_ip = switch_ip # switch ip address
         self.clients = clients # list of clients
         self.wireless_clients = wireless_clients # list of WLANclients
         self.lldp_devices = lldp_devices # list OR dict of lldp_devices. if dict = ap_list , switch_list LISTS
+        self.number_mac_entrys = number_mac_entrys
 
 
 
@@ -129,8 +130,12 @@ class TopologyMapper(Runner):
            
             
             clients = []
+            num_entrys = 0
+            num_clients = 0
             for entry in mac_table:
+                num_entrys += 1
                 if entry.port_id not in uplink_ports and entry.port_id not in wireless_ports:
+                    num_clients += 1
                     clients.append(entry)
             wireless_clients = []
             for entry in mac_table:
@@ -143,12 +148,11 @@ class TopologyMapper(Runner):
             print("WLAN clients")
             pprint(wireless_clients)
 
+            print(f"number of mac-entrys in table: {num_entrys}")
+            print(f"number of wired clients on switch (as in exlude found on uplinkports): {num_clients}")
             # create switchobject
-            sw_obj = SwitchInfo(switch_ip=switch, clients=clients, wireless_clients=wireless_clients, lldp_devices=lldp_data)
+            sw_obj = SwitchInfo(switch_ip=switch, clients=clients, wireless_clients=wireless_clients, lldp_devices=lldp_data, number_mac_entrys=num_clients)
             topology.append(sw_obj)
-
-            #self.export_topology_csv(switchip=switch, clients=clients, wireless_clients=wireless_clients, lldp_devices=lldp_data)
-
             switch_client.logout()
 
         return topology
