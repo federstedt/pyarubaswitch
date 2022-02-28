@@ -25,6 +25,13 @@ class SwitchInfo(object):
 class TopologyMapper(Runner):
 
 
+    def get_devices_csv(self, csv_filename):
+        # read csv
+        mac_list = []
+        # add device mac-address to list
+
+        # return list
+
 
     def export_topology_csv(self, csv_filename, topology_list):
         '''
@@ -35,6 +42,10 @@ class TopologyMapper(Runner):
         client_header = ["switchip", "mac_address", "port","vlan_id", "Wireless"]
         client_file = f"{csv_filename}_clients.csv"
 
+        # check if there already is a file with Path
+        #TODO: get device list with mac-adresses from csv
+
+
         with open(client_file, "w", encoding='UTF8') as f:
             writer = csv.writer(f)
             writer.writerow(client_header)
@@ -42,6 +53,10 @@ class TopologyMapper(Runner):
             for switch_obj in topology_list:
                 for client in switch_obj.clients:
                     row = [switch_obj.switch_ip, client.mac_address.replace("-",""), client.port_id, client.vlan_id, ""]
+                    # check if device already excist in csv
+                    # if excist update it. (device can change port) , do NOT append , update row
+
+                    # if not excist before append
                     writer.writerow(row)
 
                 for client in switch_obj.wireless_clients:
