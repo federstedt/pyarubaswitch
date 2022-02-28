@@ -41,11 +41,11 @@ class TopologyMapper(Runner):
 
             for switch_obj in topology_list:
                 for client in switch_obj.clients:
-                    row = [switch_obj.switch_ip, client.mac_address, client.port_id, client.vlan_id, ""]
+                    row = [switch_obj.switch_ip, client.mac_address.replace("-",""), client.port_id, client.vlan_id, ""]
                     writer.writerow(row)
 
                 for client in switch_obj.wireless_clients:
-                    row = [switch_obj.switch_ip, client.mac_address, client.port_id, client.vlan_id, "YES"]
+                    row = [switch_obj.switch_ip, client.mac_address.replace("-",""), client.port_id, client.vlan_id, "YES"]
                     writer.writerow(row)
             
 
