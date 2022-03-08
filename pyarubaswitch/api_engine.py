@@ -120,6 +120,8 @@ class PyAosSwitch(object):
                     self.api_url + "login-sessions", timeout=self.timeout, headers=headers)
                 logout.raise_for_status()
                 self.session.close()
+                if self.verbose:
+                    print("Logged out successfully")
             except Exception as e:
                 if self.error == None:
                     self.error = {}
@@ -165,21 +167,24 @@ class PyAosSwitch(object):
         Gets API latest supported apiversion from switch and uses that version for all future calls.
         '''
         versions = self.get_rest_version()
-        latest_ver = versions["version_element"][-1]["version"]
-        #remove .X from v1.0  
+        if versions:
+            latest_ver = versions["version_element"][-1]["version"]
+            #remove .X from v1.0  
 
-        split_string = latest_ver.split(".", 1)
-        latest_ver = split_string[0]
-         # set self.api_version to latest supported
-        self.version = latest_ver
-        # refresh api url with latest version
-        self.set_api_url()
+            split_string = latest_ver.split(".", 1)
+            latest_ver = split_string[0]
+            # set self.api_version to latest supported
+            self.version = latest_ver
+            # refresh api url with latest version
+            self.set_api_url()
 
-        # remove v , convert to int
-        self.rest_verion_int = int(latest_ver.replace("v",""))
-        # > ver7 not equals legacy logins without session cookie
-        if self.rest_verion_int > 6:
-            self.legacy_api = False
+            # remove v , convert to int
+            self.rest_verion_int = int(latest_ver.replace("v",""))
+            # > ver7 not equals legacy logins without session cookie
+            if self.rest_verion_int > 6:
+                self.legacy_api = False
+        else:
+            print("Error getting switch version")
 
 
 
