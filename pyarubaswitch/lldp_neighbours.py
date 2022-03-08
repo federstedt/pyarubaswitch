@@ -27,15 +27,25 @@ class LLdpInfo(object):
 
                 if is_a_switch == True:
                     #TODO: kolla om v7 har name = chassi_id
+                    # sometimes its a list, sometimes its a dict
+                    if type(x['remote_management_address']) == list:
+                        remote_ip = x['remote_management_address'][0]['address']
+                    else:
+                        remote_ip = x['remote_management_address']['address']
+
                     switch = LldpNeighbour(
-                        local_port=x['local_port'], name=x['system_name'], ip_address=x['remote_management_address'][0]['address'],remote_port=x['port_id'])
+                        local_port=x['local_port'], name=x['system_name'], ip_address=remote_ip,remote_port=x['port_id'])
                     switches.append(switch)
 
                 is_an_ap = x['capabilities_enabled']['wlan_access_point']
 
                 if is_an_ap == True:
+                    if type(x['remote_management_address']) == list:
+                        remote_ip = x['remote_management_address'][0]['address']
+                    else:
+                        remote_ip = x['remote_management_address']['address']
                     ap = LldpNeighbour(
-                        local_port=x['local_port'], name=x['system_name'], ip_address=x['remote_management_address'][0]['address'])
+                        local_port=x['local_port'], name=x['system_name'], ip_address=remote_ip)
                     access_points.append(ap)
 
             if capability == "all":
