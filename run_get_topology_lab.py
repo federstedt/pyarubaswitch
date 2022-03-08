@@ -4,7 +4,7 @@ from pyarubaswitch_workflows.get_topology import TopologyMapper
 def main():
     print("Lets go!")
     # via yaml
-    run = TopologyMapper(config_filepath="vars.yaml", verbose=True, SSL=True, rest_version=8)
+    run = TopologyMapper(config_filepath="vars.yaml", exlude_vlans=2, verbose=True, SSL=True, rest_version=8)
 
     topology = run.get_topology()
     
