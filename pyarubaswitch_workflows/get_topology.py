@@ -24,6 +24,17 @@ class SwitchInfo(object):
 
 class TopologyMapper(Runner):
 
+    def __init__(self, config_filepath=None, site_name=None, export_folder_name="export", arg_username=None, arg_password=None,
+                 arg_switches=None, SSL=False, verbose=False, timeout=5, validate_ssl=False, ssl_login=False, rest_version=7):
+        super().__init__(config_filepath, arg_username, arg_password,
+                 arg_switches, SSL, verbose, timeout, validate_ssl, ssl_login, rest_version)
+
+        if self.args_passed == False:
+            self.site_name = self.config.site_name
+        else:
+            self.site_name = site_name
+        self.export_folder = export_folder_name
+
 
     def get_devices_csv(self, csv_filename):
         # read csv
@@ -33,14 +44,15 @@ class TopologyMapper(Runner):
         # return list
 
 
-    def export_topology_csv(self, csv_filename, topology_list):
+    def export_topology_csv(self, topology_list):
         '''
         Exports topology data to csv-files
+        filename is set by self.site_name, read from args to TopolgyMapper or from yaml file site_name
         '''
         # client file data export
         # mac-adress, port, wireless(YES/NO)
         client_header = ["switchip", "mac_address", "port","vlan_id", "Wireless"]
-        client_file = f"{csv_filename}_clients.csv"
+        client_file = f"{self.export_folder}/{self.site_name}_clients.csv"
 
         # check if there already is a file with Path
         #TODO: get device list with mac-adresses from csv
@@ -67,7 +79,7 @@ class TopologyMapper(Runner):
         # uplink file data export
         uplink_header = ["switchip", "name", "port", "remote_port", "ip_address", "Type"]
         # append uplink_ports
-        uplink_file = f"{csv_filename}_netdevices.csv"
+        uplink_file = f"{self.export_folder}/{self.site_name}_netdevices.csv"
         # append ap_ports
         with open(uplink_file, "w", encoding="UTF8") as f:
             writer = csv.writer(f)

@@ -15,6 +15,8 @@ class ConfigReader(object):
             self.username = self.vars["username"]
             self.password = self.vars["password"]
             self.switches = self.vars["switches"]
+            if "site_name" in self.vars:
+                self.site_name = self.vars["site_name"]
         else:
             print("Error! No configfile was found:")
             print(self.filepath)
