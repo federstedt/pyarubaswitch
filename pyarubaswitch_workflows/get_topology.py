@@ -59,7 +59,7 @@ class TopologyMapper(Runner):
     def get_devices_csv(self, csv_filename):
         mac_list = []
         # read csv
-        with open(csv_filename, mode='r') as csv_file:
+        with open(csv_filename, mode='r', encoding="utf-8-sig") as csv_file:
             csv_reader = csv.DictReader(csv_file)
 
             for line in csv_reader:
@@ -121,7 +121,7 @@ class TopologyMapper(Runner):
         # append uplink_ports
         uplink_file = f"{self.export_folder}/{self.site_name}_netdevices.csv"
         # append ap_ports
-        with open(uplink_file, "w", encoding="UTF8") as f:
+        with open(uplink_file, "w", encoding="utf-8-sig") as f:
             writer = csv.writer(f)
             writer.writerow(uplink_header)
 
