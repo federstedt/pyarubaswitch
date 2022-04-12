@@ -24,8 +24,9 @@ class LLdpInfo(object):
             for x in elements:
 
                 is_a_switch = x['capabilities_enabled']['bridge']
+                is_a_phone = x['capabilities_enabled']['telephone']
 
-                if is_a_switch == True:
+                if is_a_switch == True and is_a_phone != True:
                     #TODO: kolla om v7 har name = chassi_id
                     # sometimes its a list, sometimes its a dict
                     if type(x['remote_management_address']) == list:
