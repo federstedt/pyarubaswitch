@@ -4,6 +4,8 @@ from pyarubaswitch.config_reader import ConfigReader
 from pyarubaswitch.input_parser import InputParser
 # Sample runner for api
 
+from pyarubaswitch_workflows.network_objects import SwitchInfo
+
 class Runner(object):
 
     def __init__(self, config_filepath=None, arg_username=None, arg_password=None,
@@ -35,6 +37,7 @@ class Runner(object):
         self.ssl_login = ssl_login
         self.SSL = SSL
         self.rest_version = rest_version
+
 
         
     def get_lldp_info_sorted(self, api_runner):
@@ -71,3 +74,26 @@ class Runner(object):
             switch_port_data = api_runner.get_port_vlan(sw.local_port)
             print(sw.name)
             print(switch_port_data)
+
+
+    def get_transceivers(self):
+        ''' 
+        Get transievers from all switches.
+        return list of switch objects, populated with switch.transceivers
+        '''
+        
+        switches = []
+        for switch in self.switches:
+            switch_client = ArubaSwitchClient(
+                    switch, self.username, self.password, self.SSL, self.verbose, self.timeout, self.validate_ssl, self.rest_version)
+            switch_client.login()
+
+            print(f"Getting transceivers from switch: {switch}")
+            transceivers_data = switch_client.get_transceivers()
+            switch_obj = SwitchInfo(switch_ip=switch, transceivers=transceivers_data)
+            switches.append(switch_obj)
+
+            switch_client.logout()
+
+        return switches
+            

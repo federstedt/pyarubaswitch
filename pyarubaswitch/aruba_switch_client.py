@@ -11,6 +11,7 @@ from pyarubaswitch.get_snmpv3_info import Snmpv3Info
 from pyarubaswitch.get_sntp import SntpInfo
 from pyarubaswitch.get_loop_protect import LoopProtect
 from pyarubaswitch.get_mac_table import MacAddressTable
+from pyarubaswitch.interface_info import InterfaceInfo
 
 
 class ArubaSwitchClient(object):
@@ -104,6 +105,12 @@ class ArubaSwitchClient(object):
         mac_table_info = MacAddressTable(api_client=self.api_client)
         mac_table = mac_table_info.get_mac_table()
         return mac_table
+
+
+    def get_transceivers(self):
+        transceivers_data = InterfaceInfo(api_client=self.api_client).get_transceivers()
+        return transceivers_data
+        
 
     def logout(self):
         '''Logout from switch '''

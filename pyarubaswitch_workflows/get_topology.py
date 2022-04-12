@@ -3,6 +3,8 @@ from pyarubaswitch.aruba_switch_client import ArubaSwitchClient
 from pyarubaswitch.get_mac_table import MacTableElement
 import csv
 
+from pyarubaswitch_workflows.network_objects import SwitchInfo
+
 from pathlib import Path
 
 #TODO: remove when finished
@@ -10,18 +12,7 @@ from pprint import pprint
 
 
 
-class SwitchInfo(object):
 
-
-    def __repr__(self):
-        return f"switch_ip: {self.switch_ip}\nclients: {self.clients}\nwireless_clients: {self.wireless_clients}\n lldp_devices: {self.lldp_devices}\nnumber_mac_antrys: {self.number_mac_entrys}"
-
-    def __init__(self, switch_ip, clients, wireless_clients, lldp_devices, number_mac_entrys):
-        self.switch_ip = switch_ip # switch ip address
-        self.clients = clients # list of clients
-        self.wireless_clients = wireless_clients # list of WLANclients
-        self.lldp_devices = lldp_devices # list OR dict of lldp_devices. if dict = ap_list , switch_list LISTS
-        self.number_mac_entrys = number_mac_entrys
 
 
 
