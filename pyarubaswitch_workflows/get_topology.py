@@ -134,6 +134,52 @@ class TopologyMapper(Runner):
     
 
 
+    def old_get_port_duplicates(self, number, clients):
+        '''
+        Get port that cointains more than X number of clients.
+        '''
+        #TODO: find duplicates in list
+        non_duplicate_client_ports = []
+        duplicate_client_ports = []
+        for i in clients:
+            if i.port_id not in non_duplicate_client_ports:
+                non_duplicate_client_ports.append(i.port_id)
+            else:
+                #these are duplicates
+                duplicate_client_ports.append(i.port_id)
+
+        print('More then one client on the same port')
+        #TODO: hämta alla klienter på den porten istället för att bara lista klienerna
+        print(duplicate_client_ports)
+        print(f'Number of clients: {len(duplicate_client_ports)}')
+
+        return duplicate_client_ports
+       
+
+    def get_port_duplicates(self, number, clients):
+        '''
+        Get duplicates, that occur more than X times (number)
+        '''
+        port_list = []
+        dup_list = []
+        for client in clients:
+            port_list.append(client.port_id)
+
+
+        client_set = set(port_list)
+
+        for i in client_set:
+            # for each unique
+
+            # find number of occurenses in list
+            occur = port_list.count(i)
+            if occur > number:
+                #add to fulswitch list
+                dup_list.append(i)
+
+        return dup_list
+
+            
 
 
     def get_topology(self):
@@ -219,38 +265,17 @@ class TopologyMapper(Runner):
                 pprint(clients)
                 print("WLAN clients")
                 pprint(wireless_clients)
-                #TODO: find duplicates in list
-                non_duplicate_client_ports = []
-                duplicate_client_ports = []
-                for i in clients:
-                    if i.port_id not in non_duplicate_client_ports:
-                        non_duplicate_client_ports.append(i.port_id)
-                    else:
-                        #these are duplicates
-                        duplicate_client_ports.append(i.port_id)
-
-                print('More then one client on the same port')
-                #TODO: hämta alla klienter på den porten istället för att bara lista klienerna
-                print(duplicate_client_ports)
-                duplicate_clients = []
-                #TODO: gör en small_lista för alla som har 2 clients if >2 lägg till duplicate och rensa small ?
-                only_2 = []
-                for port in duplicate_client_ports:
-                    for client in mac_table:
-                        if port == client.port_id:
-                            only_2.append(client)
-
-                        if len(only_2) > 2:
-                            # if more than 2 clients on the same port add to list
-                            duplicate_client_ports.extend(only_2)
-                            # clear list 
-                            only_2 = []
+                
 
                     
-               
+                duplicate_clients = self.get_port_duplicates(2, clients)
 
                 print(f'Clients on the same port:')
                 print(duplicate_clients)
+                #TODO: get all clients on ports i duplicate_clients list
+                # for i in duplicate_clients:
+                # lista mac_table == i
+
                 print(f'Num ignored clients: {len(ignored_entrys)}')
 
                 print(f"number of mac-entrys in table: {num_entrys}")
