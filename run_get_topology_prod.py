@@ -2,6 +2,7 @@ from pyarubaswitch_workflows.get_topology import TopologyMapper
 
 
 #TODO: fixa när klienter är på trunkar, de är också dubletter men verkar inte träffa bort-sorterings-regelen
+# TODO: hitta fulswitchar / omanagerade switchar som ej är med i ip-listan
 
 def main():
     print("Lets go!")

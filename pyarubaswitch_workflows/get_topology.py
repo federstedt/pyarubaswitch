@@ -156,9 +156,9 @@ class TopologyMapper(Runner):
         return duplicate_client_ports
        
 
-    def get_port_duplicates(self, number, clients):
+    def get_multi_client_port(self, number, clients):
         '''
-        Get duplicates, that occur more than X times (number)
+        Get port that has more tha X amount of clients
         '''
         port_list = []
         dup_list = []
@@ -267,16 +267,13 @@ class TopologyMapper(Runner):
                 pprint(wireless_clients)
                 
 
-                    
-                duplicate_clients = self.get_port_duplicates(2, clients)
+                max_clients = 1
+                multi_ports = self.get_multi_client_port(max_clients, clients) # more than 1 client = multiclientport
 
-                print(f'Clients on the same port:')
-                print(duplicate_clients)
-                #TODO: get all clients on ports i duplicate_clients list
-                # for i in duplicate_clients:
-                # lista mac_table == i
-
-                print(f'Num ignored clients: {len(ignored_entrys)}')
+                print(f'Non AP Ports with more than {max_clients} clients, suspected unmanaged switch on ports:')
+                print(multi_ports)
+                
+                print(f'Num ignored clients (found on uplink / ignored vlan): {len(ignored_entrys)}')
 
                 print(f"number of mac-entrys in table: {num_entrys}")
                 print(f"number of wired clients on switch (as in exlude found on uplinkports): {num_clients}")
