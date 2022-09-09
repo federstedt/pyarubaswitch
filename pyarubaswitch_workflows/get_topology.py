@@ -131,29 +131,35 @@ class TopologyMapper(Runner):
                     for device in switch_obj.lldp_devices:
                         row = [switch_obj.switch_ip, device.name, device.local_port, device.remote_port, device.ip_address, ""]
                         writer.writerow(row)
+
+        self.export_unmanaged_neighbor_ports(topology_list)
     
+    def export_unmanaged_neighbor_ports(self, topology_list):
+        # export to csv:
+        # switchip, portnumber , macaddresses on that port
+        header = ["switchip", "port" ,"mac_addresses"]
+        file = f"{self.export_folder}/{self.site_name}_unmanaged.csv"
+        with open(file, "w", encoding="utf-8-sig") as f:
+            writer = csv.writer(f)
+            writer.writerow(header)
+
+            for switch_obj in topology_list:
+                if switch_obj.unmanaged_neighbor_ports:
+                    for port in switch_obj.unmanaged_neighbor_ports:
+                        mac_entrys = self.return_macs_port(port, switch_obj.clients)
+                        row = [switch_obj.switch_ip, port, mac_entrys]
+                        writer.writerow(row)
 
 
-    def old_get_port_duplicates(self, number, clients):
-        '''
-        Get port that cointains more than X number of clients.
-        '''
-        #TODO: find duplicates in list
-        non_duplicate_client_ports = []
-        duplicate_client_ports = []
-        for i in clients:
-            if i.port_id not in non_duplicate_client_ports:
-                non_duplicate_client_ports.append(i.port_id)
-            else:
-                #these are duplicates
-                duplicate_client_ports.append(i.port_id)
 
-        print('More then one client on the same port')
-        #TODO: hämta alla klienter på den porten istället för att bara lista klienerna
-        print(duplicate_client_ports)
-        print(f'Number of clients: {len(duplicate_client_ports)}')
-
-        return duplicate_client_ports
+    def return_macs_port(self, port_id, switch_clients):
+        # return all mac-addresses on port
+        mac_list = []
+        for client in switch_clients:
+            if client.port_id == port_id:
+                mac_list.append(client.mac_address.replace("-",""))
+        
+        return mac_list
        
 
     def get_multi_client_port(self, number, clients):
@@ -267,10 +273,10 @@ class TopologyMapper(Runner):
                 pprint(wireless_clients)
                 
 
-                max_clients = 1
+                max_clients = 2
                 multi_ports = self.get_multi_client_port(max_clients, clients) # more than 1 client = multiclientport
 
-                print(f'Non AP Ports with more than {max_clients} clients, suspected unmanaged switch on ports:')
+                print(f'Non AP Ports with more than {max_clients} clients, suspected unmanaged switch on ports (aka fulswitch):')
                 print(multi_ports)
                 
                 print(f'Num ignored clients (found on uplink / ignored vlan): {len(ignored_entrys)}')
@@ -278,7 +284,7 @@ class TopologyMapper(Runner):
                 print(f"number of mac-entrys in table: {num_entrys}")
                 print(f"number of wired clients on switch (as in exlude found on uplinkports): {num_clients}")
                 # create switchobject
-                sw_obj = SwitchInfo(switch_ip=switch, clients=clients, wireless_clients=wireless_clients, lldp_devices=lldp_data, number_mac_entrys=num_clients)
+                sw_obj = SwitchInfo(switch_ip=switch, clients=clients, wireless_clients=wireless_clients, lldp_devices=lldp_data, number_mac_entrys=num_clients, unmanaged_neighbor_ports=multi_ports)
                 topology.append(sw_obj)
                 switch_client.logout()
 
