@@ -11,12 +11,6 @@ from pathlib import Path
 from pprint import pprint
 
 
-
-
-
-
-
-
 class TopologyMapper(Runner):
 
 
@@ -62,10 +56,10 @@ class TopologyMapper(Runner):
         return mac_list
 
 
-    def export_topology_csv(self, topology_list):
+    def export_clients_csv(self, topology_list):
         '''
-        Exports topology data to csv-files
-        filename is set by self.site_name, read from args to TopolgyMapper or from yaml file site_name
+        Exports clients to csv file
+
         '''
         # client file data export
         # mac-adress, port, wireless(YES/NO)
@@ -73,6 +67,7 @@ class TopologyMapper(Runner):
         client_file = f"{self.export_folder}/{self.site_name}_clients.csv"
 
         # check if there already is a file with Path
+        #TODO: fixa append ? eller göra db lösning eller något direkt ? Nöja oss med att skriva då db kan hålla värden och appenda separat istället . Ha denna mer som det som händer vid "export to csv knapp"
         if Path(client_file).is_file():
             # get device list with mac-adresses from csv
             old_mac_entrys = self.get_devices_csv(client_file)
@@ -86,9 +81,6 @@ class TopologyMapper(Runner):
 
             # add old clients to list of switch.clients and .wireless clients and export
 
-            
-
-        #TODO: lägg detta i separat funktion istället för att hålla koden tydligare och mer separarerd
         with open(client_file, "w", encoding='utf-8-sig') as f:
             writer = csv.writer(f)
             writer.writerow(client_header)
@@ -105,8 +97,11 @@ class TopologyMapper(Runner):
                 for client in switch_obj.wireless_clients:
                     row = [switch_obj.switch_ip, client.mac_address.replace("-",""), client.port_id, client.vlan_id, "YES"]
                     writer.writerow(row)
-            
-
+    
+    def export_netdevices_csv(self, topology_list):
+        '''
+        Export network devices to csv-file
+        '''
         # uplink file data export
         uplink_header = ["switchip", "name", "port", "remote_port", "ip_address", "Type"]
         # append uplink_ports
@@ -131,10 +126,9 @@ class TopologyMapper(Runner):
                     for device in switch_obj.lldp_devices:
                         row = [switch_obj.switch_ip, device.name, device.local_port, device.remote_port, device.ip_address, ""]
                         writer.writerow(row)
-
-        self.export_unmanaged_neighbor_ports(topology_list)
     
-    def export_unmanaged_neighbor_ports(self, topology_list):
+       
+    def export_unmanaged_neighbor_ports_csv(self, topology_list):
         # export to csv:
         # switchip, portnumber , macaddresses on that port
         header = ["switchip", "port" ,"mac_addresses"]
@@ -150,6 +144,17 @@ class TopologyMapper(Runner):
                         row = [switch_obj.switch_ip, port, mac_entrys]
                         writer.writerow(row)
 
+    def export_topology_csv(self, topology_list):
+        '''
+        Exports topology data to csv-files
+        filename is set by self.site_name, read from args to TopolgyMapper or from yaml file site_name
+        ''' 
+        # export clients to csv
+        self.export_clients_csv(topology_list)
+        # network devices
+        self.export_netdevices_csv(topology_list)
+        # unmanaged switches etc
+        self.export_unmanaged_neighbor_ports_csv(topology_list)
 
 
     def return_macs_port(self, port_id, switch_clients):
@@ -292,9 +297,6 @@ class TopologyMapper(Runner):
             print('Failed getting data from:')
             print(self.failed_connections)
         return topology
-
-
-
 
 
     def get_mac_table(self, api_runner):

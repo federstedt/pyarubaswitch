@@ -1,13 +1,12 @@
 from pyarubaswitch_workflows.get_topology import TopologyMapper
 
 
-#TODO: fixa när klienter är på trunkar, de är också dubletter men verkar inte träffa bort-sorterings-regelen
-# TODO: hitta fulswitchar / omanagerade switchar som ej är med i ip-listan
 # TODO: förbättra unmaneg listan, ifall netdevices innehåller en mgmt ip som inte är listad i yaml bör den hamna i unmanaged även om den svarar på lldp ?
-# TODO:
+# TODO: Fixa så man kan kolla senast aktiva portar , sen reboot eller datum. kolla om det finns färdigt i REST eller om man måste hitta på något eget.
 # SNYGGA TILL SCRIPTET EXPORT GÖR FÖR MYCKET I EN FUNKTION
+# TODO: Gör separata funktione som kan bli kallade själva. tex hitta bara fulswitchar, lista bara grannar , lista bara klienter mac-table, visa "aktiva" portar sen datum / uppstart
 # Snygga till output och optimera för bättre läsbarhet.
-# Exportera till pdf eller ritning , något roligare än csv ?
+# flask sida med DB ! med export knapp till csv + html + pdf 
 
 def main():
     print("Lets go!")
