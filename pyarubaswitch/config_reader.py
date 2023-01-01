@@ -1,6 +1,7 @@
 from pathlib import Path
 import yaml
 
+from aruba_switch_client import ArubaSwitchClient
 
 class ConfigReader(object):
 
@@ -27,3 +28,15 @@ class ConfigReader(object):
         with open(filename, "r") as input_file:
             data = yaml.load(input_file, Loader=yaml.FullLoader)
         return data
+
+    def get_apiclient_from_file(self, ip_addr: str):
+        '''
+        Takes yaml file, returns ArubaSwitchClient object
+        args:
+        ip_addr : str format ip-adress of switch to return a client
+        '''
+        return ArubaSwitchClient(switch_ip=ip_addr, username=self.username, password=self.password)
+
+
+
+
