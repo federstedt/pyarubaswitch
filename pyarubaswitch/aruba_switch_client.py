@@ -16,7 +16,7 @@ from pyarubaswitch.interface_info import InterfaceInfo
 
 class ArubaSwitchClient(object):
 
-    def __init__(self, switch_ip, username, password, SSL=False, verbose=False, timeout=5, validate_ssl=False, rest_version=7):
+    def __init__(self, switch_ip, username, password, SSL=False, verbose=False, timeout=10, validate_ssl=False, rest_version=7):
         self.switch_ip = switch_ip
         self.username = username
         self.password = password

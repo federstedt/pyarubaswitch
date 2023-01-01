@@ -16,6 +16,16 @@ tests/pyarcentral_test.py .........                                             
 # pytest will run all files of the form test_*.py or *_test.py in the current directory and its subdirectories. More generally, it follows standard test discovery rules.    
 # https://docs.pytest.org/en/6.2.x/
 
+from pyarubaswitch.config_reader import ConfigReader
+
 def test_print():
     assert 1 == 1
     print("hellow")
+
+
+def test_get_client_from_file():
+    client = ConfigReader('vars.yaml').get_apiclient_from_file("192.168.119.250")
+
+    client.login()
+    print(client.get_lldp_info_sorted())
+    client.logout()
