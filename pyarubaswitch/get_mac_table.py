@@ -1,4 +1,5 @@
 # Get mac-address table
+from .models import MacTableElement
 
 class MacAddressTable(object):
 
@@ -25,13 +26,3 @@ class MacAddressTable(object):
 
 
 
-class MacTableElement(object):
-
-    def __repr__(self):
-        return f"mac_address: {self.mac_address}, port_id: {self.port_id}, vlan_id: {self.vlan_id}"
-
-    def __init__(self, mac_address, port_id, vlan_id, switch_ip=None):
-        self.mac_address = mac_address
-        self.port_id = port_id
-        self.vlan_id = vlan_id
-        self.switch_ip = switch_ip # optional switch where client was found

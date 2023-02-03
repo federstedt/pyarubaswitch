@@ -1,3 +1,4 @@
+from .models import SystemInfo
 
 class SystemStatus(object):
 
@@ -7,23 +8,15 @@ class SystemStatus(object):
     def get_system_info(self):
         sys_json = self.api_client.get('system/status')
 
-        if not self.api_client.error:
+        if not self.api_client.error and sys_json:
 
-            sysinfo = SystemInfo(sys_json["name"], sys_json['hardware_revision'],
-                                 sys_json['firmware_version'], sys_json['serial_number'])
+            sysinfo = SystemInfo(name = sys_json["name"], hw_rev = sys_json['hardware_revision'],
+                                 fw_ver = sys_json['firmware_version'], serial= sys_json['serial_number'], mac_addr = sys_json['base_ethernet_address']['octets'])
 
             return sysinfo
         elif self.api_client.error:
             print(self.api_client.error)
+            return None
 
 
-class SystemInfo(object):
 
-    def __repr__(self):
-        return f"name: {self.name}, hw: {self.hw_rev}, fw: {self.fw_ver}, sn: {self.serial}"
-
-    def __init__(self, name, hw_rev, fw_ver, sn):
-        self.name = name
-        self.hw_rev = hw_rev
-        self.fw_ver = fw_ver
-        self.serial = sn

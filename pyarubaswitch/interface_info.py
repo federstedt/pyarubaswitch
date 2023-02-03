@@ -1,16 +1,4 @@
-class Transceiver(object):
-
-    def __repr__(self):
-        return f"Transceiver: part_number: {self.part_number}, port_id: {self.port_id}, product_number: {self.product_number}, serial_number: {self.serial_number}, type: {self.type}" 
-
-    def __init__(self, part_number, port_id, product_number, serial_number, trans_type):
-        self.part_number = part_number
-        self.port_id = port_id
-        self.product_number = product_number
-        self.serial_number = serial_number
-        self.type = trans_type
-
-
+from .models import Transceiver
 
 class InterfaceInfo(object):
 
@@ -31,9 +19,4 @@ class InterfaceInfo(object):
                 transceivers.append(trans)
             return transceivers
         else:
-            print(self.api_client.errror)
-
-
-
-
-
+            print(self.api_client.error)

@@ -1,22 +1,22 @@
 # a class that has a lot of methods for getting relevant data from the api client
 # uses the client to pass a api_client object, object is used for running calls for getting the data
-from pyarubaswitch.api_engine import PyAosSwitch
+from .api_engine import PyAosSwitch
 
-from pyarubaswitch.system_status import SystemStatus
-from pyarubaswitch.lldp_neighbours import LLdpInfo
-from pyarubaswitch.get_port_vlans import Vlaninfo
-from pyarubaswitch.telnet_info import TelnetInfo
-from pyarubaswitch.get_stp_info import StpInfo
-from pyarubaswitch.get_snmpv3_info import Snmpv3Info
-from pyarubaswitch.get_sntp import SntpInfo
-from pyarubaswitch.get_loop_protect import LoopProtect
-from pyarubaswitch.get_mac_table import MacAddressTable
-from pyarubaswitch.interface_info import InterfaceInfo
+from .system_status import SystemStatus
+from .lldp_neighbours import LLdpInfo
+from .get_port_vlans import Vlaninfo
+from .telnet_info import TelnetInfo
+from .get_stp_info import StpInfo
+from .get_snmpv3_info import Snmpv3Info
+from .get_sntp import SntpInfo
+from .get_loop_protect import LoopProtect
+from .get_mac_table import MacAddressTable
+from .interface_info import InterfaceInfo
 
 
 class ArubaSwitchClient(object):
 
-    def __init__(self, switch_ip, username, password, SSL=False, verbose=False, timeout=10, validate_ssl=False, rest_version=7):
+    def __init__(self, switch_ip, username, password, SSL=False, verbose=False, timeout=15, validate_ssl=False, rest_version=7):
         self.switch_ip = switch_ip
         self.username = username
         self.password = password

@@ -1,4 +1,5 @@
 # Get lldp neighbours, return port information for those neighbours
+from .models import LldpNeighbour
 
 class LLdpInfo(object):
 
@@ -80,14 +81,5 @@ class LLdpInfo(object):
             return lldp_devs
         
 
-class LldpNeighbour(object):
 
-    def __init__(self, local_port, name, ip_address=None, remote_port=None):
-        self.local_port = local_port
-        self.name = name
-        self.ip_address = ip_address
-        self.remote_port = remote_port
-
-    def __repr__(self):
-        return f"name: {self.name}, local_port: {self.local_port}, remote_port: {self.remote_port}, ip_address: {self.ip_address}"
 

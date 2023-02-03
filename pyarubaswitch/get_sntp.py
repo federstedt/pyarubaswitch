@@ -1,4 +1,6 @@
 
+from .models import SntpServer
+
 class SntpInfo(object):
 
     def __init__(self, api_client):
@@ -21,11 +23,3 @@ class SntpInfo(object):
             print(self.api_client.error)
 
 
-class SntpServer(object):
-
-    def __repr__(self):
-        return f"address: {self.address}, prio: {self.prio}"
-
-    def __init__(self, address, prio):
-        self.address = address
-        self.prio = prio

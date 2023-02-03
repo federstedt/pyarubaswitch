@@ -1,4 +1,6 @@
 
+from .models import Snmpv3
+
 class Snmpv3Info(object):
 
     def __init__(self, api_client):
@@ -16,12 +18,4 @@ class Snmpv3Info(object):
             print(self.api_client.error)
 
 
-class Snmpv3(object):
 
-    def __repr__(self):
-        return f"enabled: {self.enabled}, is_non_v3_readonly: {self.non_snmpv3_readonly}, only_v3: {self.only_v3}"
-
-    def __init__(self, enabled, readonly, only_v3):
-        self.enabled = enabled
-        self.non_snmpv3_readonly = readonly
-        self.only_v3 = only_v3
