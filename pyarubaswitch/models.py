@@ -7,18 +7,30 @@ class SystemInfo(BaseModel):
     serial: str
     mac_addr: str
 
+class MacTableElement(BaseModel):
+    mac_address: str
+    port_id: int
+    vland_id: int
 
-class MacTableElement(object):
 
-    def __repr__(self):
-        return f"mac_address: {self.mac_address}, port_id: {self.port_id}, vlan_id: {self.vlan_id}"
+class STP(BaseModel):
+    enabled: bool
+    prio: int
+    mode: str
 
-    def __init__(self, mac_address, port_id, vlan_id, switch_ip=None):
-        self.mac_address = mac_address
-        self.port_id = port_id
-        self.vlan_id = vlan_id
-        self.switch_ip = switch_ip # optional switch where client was found
 
+
+class LldpNeighbour(BaseModel):
+    local_port: int
+    name: str
+    ip_address: str
+    remote_port: int | None
+
+class LLDPTable(BaseModel):
+    switches: list[LldpNeighbour] = []
+    access_points: list[LldpNeighbour] = []
+
+#TODO: nedan gör om till BaseModels
 
 class Snmpv3(object):
 
@@ -40,11 +52,6 @@ class SntpServer(object):
         self.address = address
         self.prio = prio
 
-class STP(BaseModel):
-    enabled: bool
-    prio: int
-    mode: str
-
 
 class Transceiver(object):
 
@@ -59,13 +66,3 @@ class Transceiver(object):
         self.type = trans_type
 
 
-class LldpNeighbour(object):
-
-    def __init__(self, local_port, name, ip_address=None, remote_port=None):
-        self.local_port = local_port
-        self.name = name
-        self.ip_address = ip_address
-        self.remote_port = remote_port
-
-    def __repr__(self):
-        return f"name: {self.name}, local_port: {self.local_port}, remote_port: {self.remote_port}, ip_address: {self.ip_address}"

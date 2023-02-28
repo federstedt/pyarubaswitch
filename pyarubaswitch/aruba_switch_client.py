@@ -55,24 +55,11 @@ class ArubaSwitchClient(object):
         '''Returns all switch/ap neighbour info as objects.
             requires rest-api v4 '''
         lldp = LLdpInfo(api_client=self.api_client)
-        return lldp.get_neighbours_sorted(capability="all")
+        return lldp.get_neighbours_sorted()
 
     def get_lldp_info(self):
         lldp = LLdpInfo(api_client=self.api_client)
         return lldp.get_neighbors()
-
-    def get_lldp_aps(self):
-        '''Requires restAPI version 4.
-        Returns lldp neighbour objects. That are classified as APs'''
-        lldp = LLdpInfo(api_client=self.api_client)
-        return lldp.get_neighbours_sorted(capability="ap")
-
-    def get_lldp_switches(self):
-        '''
-        Requires restAPI version 4.
-        Returns lldp neighbour objects. That are classified as Switches'''
-        lldp = LLdpInfo(api_client=self.api_client)
-        return lldp.get_neighbours_sorted(capability="switch")
 
     def get_port_vlan(self, port):
         '''Returns port info object, containing all vlans on that port untag/tagged'''

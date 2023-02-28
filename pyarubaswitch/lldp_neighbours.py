@@ -1,27 +1,23 @@
 # Get lldp neighbours, return port information for those neighbours
-from .models import LldpNeighbour
+from .models import LldpNeighbour, LLDPTable
 
 class LLdpInfo(object):
 
     def __init__(self, api_client):
         self.api_client = api_client
 
-    def get_neighbours_sorted(self, capability="all"):
+    def get_neighbours_sorted(self):
         '''Returns switch / ap object based on lldp discovery.
             Requires atleast rest-api version 4.
-            :params capability , defualt="all" get switches and aps. Set to "ap" for aps, or "switch" for switches.
         '''
         # Kräver v4 för att funka snyggast, saknas en hel del annars
 
-        # converts to lower just in case user specifies uppercase
-        capability = capability.lower()
         lldp_json = self.api_client.get('lldp/remote-device')
         # if api_session was created within the object itself. Logout as it will not be reused outside this object
         if not self.api_client.error:
             elements = lldp_json['lldp_remote_device_element']
-            switches = []
-            access_points = []
-
+            lldp_table = LLDPTable()
+            
             for x in elements:
 
                 is_a_switch = x['capabilities_enabled']['bridge']
@@ -37,7 +33,7 @@ class LLdpInfo(object):
 
                     switch = LldpNeighbour(
                         local_port=x['local_port'], name=x['system_name'], ip_address=remote_ip,remote_port=x['port_id'])
-                    switches.append(switch)
+                    lldp_table.switches.append(switch)
 
                 is_an_ap = x['capabilities_enabled']['wlan_access_point']
 
@@ -48,18 +44,16 @@ class LLdpInfo(object):
                         remote_ip = x['remote_management_address']['address']
                     ap = LldpNeighbour(
                         local_port=x['local_port'], name=x['system_name'], ip_address=remote_ip)
-                    access_points.append(ap)
+                    lldp_table.access_points.append(ap)
 
-            if capability == "all":
-                return({'ap_list': access_points, 'switch_list': switches})
-            elif capability == "ap":
-                return access_points
-            elif capability == "switch":
-                return switches
+            
+            return lldp_table
+
+
         elif self.api_client.error:
             print(self.api_client.error)
 
-    def get_neighbors(self, capability="all"):
+    def get_neighbors(self):
         '''
         Get lldp info using legacy API. 
         Cannot sort APs from Switches by capability key
