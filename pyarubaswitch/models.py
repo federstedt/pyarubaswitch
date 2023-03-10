@@ -37,8 +37,8 @@ class Transceiver(BaseModel):
     trans_type: str
 
 class SntpServer(BaseModel):
-    address: str
-    prio: int
+    address: str | None
+    prio: int | None
 
 
 class Snmpv3(BaseModel):

@@ -13,8 +13,7 @@ class SntpInfo(object):
             sntp_servers = []
 
             for server in jsondata["sntp_servers"]:
-                server_obj = SntpServer(
-                    server["sntp_server_address"]["octets"], server["sntp_server_priority"])
+                server_obj = SntpServer(address=server["sntp_server_address"]["octets"], prio=server["sntp_server_priority"])
 
                 sntp_servers.append(server_obj)
 
