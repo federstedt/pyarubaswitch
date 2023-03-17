@@ -19,7 +19,7 @@ class STP(BaseModel):
     mode: str
 
 class LldpNeighbour(BaseModel):
-    local_port: int
+    local_port: str
     name: str
     ip_address: str
     remote_port: str | None
