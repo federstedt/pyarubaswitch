@@ -9,7 +9,7 @@ class SystemInfo(BaseModel):
 
 class MacTableElement(BaseModel):
     mac_address: str
-    port_id: int
+    port_id: str
     vland_id: int
 
 
@@ -22,7 +22,7 @@ class LldpNeighbour(BaseModel):
     local_port: int
     name: str
     ip_address: str
-    remote_port: int | None
+    remote_port: str | None
 
 class LLDPTable(BaseModel):
     switches: list[LldpNeighbour] = []
