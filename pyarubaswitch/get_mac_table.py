@@ -19,7 +19,7 @@ class MacAddressTable(object):
                 mac_table_entry_elements = jsondata["mac_table"]
             mac_address_table = []
             for x in mac_table_entry_elements:
-                mac_addr = MacTableElement(x["mac_address"],x["port_id"],x["vlan_id"])
+                mac_addr = MacTableElement(mac_address=x["mac_address"],port_id=x["port_id"],vland_id=x["vlan_id"])
                 mac_address_table.append(mac_addr)
             
             return mac_address_table
