@@ -1,14 +1,14 @@
-from pyarubaswitch.config_reader import ConfigReader
-from pprint import pprint
+from pyarubaswitch_workflows.get_vlan_info import export_portvlans_from_switches
+
+YAML_FILE = "vars.yaml"
+OUTPUT_FOLDER = "output"
+
 
 def main():
-   client = ConfigReader('vars.yaml').get_apiclient_from_file("192.168.119.250", verbose=True)
-
-   client.login()
-   system_status = client.get_system_status()
-   port_data = client.get_vlans()
-   pprint(port_data)
-   client.logout()
+    """
+    Export all vlan data to csv. csv-file named after switch-hostname.
+    """
+    export_portvlans_from_switches(vars_file=YAML_FILE, csv_folder=OUTPUT_FOLDER)
 
 
 if __name__ == "__main__":

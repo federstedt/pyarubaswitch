@@ -1,61 +1,53 @@
 # get vlans for specified port
+from typing import List
+
+from .models import VlanPort
 
 
 class Vlaninfo(object):
-
     def __init__(self, api_client):
         self.api_client = api_client
 
     @property
-    def vlan_data(self):
-        ''' returns port objects with vlan info.'''
-        vlan_info = self.api_client.get('vlans-ports')
+    def vlan_json_data(self) -> dict:
+        """returns port objects with vlan info."""
+        vlan_info = self.api_client.get("vlans-ports")
 
         return vlan_info
 
-    def port_vlans(self, interface):
-        ''' Returns vlans configured on specified interface '''
-        if not self.api_client.error:
-            vlanelements = self.vlan_data['vlan_port_element']
-            untag = []
-            tag = []
-            for x in vlanelements:
-                port = x['port_id']
-                vlanid = x['vlan_id']
-                portmode = x['port_mode']
+    @property
+    def vlan_data(self) -> List[VlanPort]:
+        """
+        Vlan data in readable format.
 
-                if port == interface:
-                    # print('Portid:',port,'vlanid:',vlanid,'portmode:',portmode)   # Troubleshooting? print this...
-                    if portmode == 'POM_UNTAGGED':
-                        untag.append(vlanid)
-                    if portmode == 'POM_TAGGED_STATIC':
-                        tag.append(vlanid)
+        Returns:
+            List[Port]: List of port objects.
+        """
+        ports = []
+        if self.vlan_json_data is not None:
+            for element in self.vlan_json_data["vlan_port_element"]:
+                untagged_vlan = None
+                tagged_vlan = None
+                if element["port_mode"] == "POM_UNTAGGED":
+                    untagged_vlan = element["vlan_id"]
+                elif element["port_mode"] == "POM_TAGGED_STATIC":
+                    tagged_vlan = element["vlan_id"]
 
-            port_object = Port(interface, untag, tag)
-            return port_object
-        elif self.api_client.error:
-            print(self.api_client.error)
+                port = VlanPort(
+                    port_id=element["port_id"],
+                    untagged=untagged_vlan,
+                    tagged=tagged_vlan,
+                )
+                ports.append(port)
 
+        return ports
 
-class Port(object):
-
-    def __repr__(self):
-        return f"Port: {self.id}, untagged: {self.untagged}, tagged: {self.tagged}"
-
-    def __init__(self, port_id, untagged, tagged):
-        self.id = port_id
-        self.untagged = untagged
-        self.tagged = tagged
-        self.missing_untagged = []
-        self.missing_tagged = []
-
-    def check_desired_vlans(self, desired_untag, desired_tag):
-        '''Returns missing vlans that are defined as desired untag/tag '''
-        for vlan in desired_untag:
-            if vlan not in self.untagged:
-                self.missing_untagged.append(vlan)
-        for vlan in desired_tag:
-            if vlan not in self.tagged:
-                self.missing_tagged.append(vlan)
-
-        return self.missing_untagged, self.missing_tagged
+    def port_vlans(self, port: int) -> VlanPort:
+        """
+        Returns:
+            Port info.
+        """
+        if self.vlan_data is not None:
+            for entry in self.vlan_data:
+                if entry.port_id == port:
+                    return entry

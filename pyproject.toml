@@ -4,3 +4,6 @@ requires = [
     "wheel"
 ]
 build-backend = "setuptools.build_meta" 
+[tool.ruff.format]
+  # Prefer single quotes over double quotes
+  quote-style = "single"
