@@ -13,7 +13,6 @@ from .get_loop_protect import LoopProtect
 from .get_mac_table import MacAddressTable
 from .interface_info import InterfaceInfo
 
-
 class ArubaSwitchClient(object):
 
     def __init__(self, switch_ip, username, password, SSL=False, verbose=False, timeout=15, validate_ssl=False, rest_version=7):
@@ -93,6 +92,12 @@ class ArubaSwitchClient(object):
         mac_table = mac_table_info.get_mac_table()
         return mac_table
 
+    def get_vlans(self):
+        """
+        Return vlan info for all ports.
+        """
+        vlan_data = Vlaninfo(api_client=self.api_client).vlan_data
+        return vlan_data
 
     def get_transceivers(self):
         transceivers_data = InterfaceInfo(api_client=self.api_client).get_transceivers()
