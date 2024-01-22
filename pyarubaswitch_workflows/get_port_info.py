@@ -3,6 +3,7 @@ from typing import List
 
 from pyarubaswitch.aruba_switch_client import ArubaSwitchClient
 from pyarubaswitch.config_reader import ConfigReader
+from pyarubaswitch.exeptions import ArubaApiError
 from pyarubaswitch.models import VlanPort
 
 from .filehandling import models_to_csv
@@ -62,7 +63,10 @@ def export_portvlans_from_switches(vars_file: str, csv_folder: str):
             switch_info = client.get_system_status()
             # vlan_info = get_port_vlans(api_client=client)
             port_info = client.get_port_info()
+            csv_filename = str(csv_folder) + '/' + str(switch_info.name) + '.csv'
+            port_export_csv(csv_filename, port_info)
+        except ArubaApiError as exc:
+            print(f'Switch: {switch} failed getting data. Reason:')
+            print(str(exc))
         finally:
             client.api_client.logout()
-        csv_filename = str(csv_folder) + '/' + str(switch_info.name) + '.csv'
-        port_export_csv(csv_filename, port_info)
