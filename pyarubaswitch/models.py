@@ -63,9 +63,11 @@ class Port(BaseModel):
 
     port_id: str  # str becase can be: 1 or 1/1/1 or a16
     untagged: Optional[int] = None
-    tagged: Optional[int] = None
+    tagged: Optional[List[int]] = None
     dot1x_enabled: Optional[bool] = None
     macauth_enabled: Optional[bool] = None
+    lacp_status: Optional[str] = None
+    trunk_group: Optional[str] = None
 
 
 class VlanPort(Port):

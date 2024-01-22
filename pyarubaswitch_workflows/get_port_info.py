@@ -42,6 +42,7 @@ def port_export_csv(filename: str, port_data: List[VlanPort]):
             'tagged',
             'dot1x_enabled',
             'macauth_enabled',
+            'trunk_group',
         },
         exlude_none=True,
     )

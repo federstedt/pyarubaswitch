@@ -1,73 +1,5 @@
 """
-Get port auth settings.
-
-
-Sample output form endpoint: /mac-authentication/port
-
-{'authorized_vlan_id': 0,
-'cached_reauth_period': 0,
-'is_mac_authentication_enabled': False,
-'logoff_period': 300,
-'mac_address_limit': 1,
-'port_id': 'C2',
-'quiet_period': 60,
-'reauth_period': 0,
-'reauthenticate': False,
-'server_timeout': 300,
-'unauthorized_vlan_id': 0,
-'uri': '/mac-authentication/port/C2'},
-{'authorized_vlan_id': 0,
-'cached_reauth_period': 0,
-'is_mac_authentication_enabled': True,
-'logoff_period': 300,
-'mac_address_limit': 1,
-'port_id': 'C3',
-'quiet_period': 30,
-'reauth_period': 0,
-'reauthenticate': False,
-'server_timeout': 300,
-'unauthorized_vlan_id': 0,
-'uri': '/mac-authentication/port/C3'},
-
-
-
-Sample output from endpoint: 'dot1x/authenticator'
-
-{'authorized_vlan_id': 0,
-'cached_reauth_period': 0,
-'client_limit': 0,
-'control': 'DAPC_AUTO',
-'enforce_cache_reauth': False,
-'is_authenticator_enabled': False,
-'logoff_period': 300,
-'max_requests': 2,
-'port_id': 'C2',
-'quiet_period': 60,
-'reauth_period': 0,
-'server_timeout': 300,
-'supplicant_timeout': 30,
-'tx_period': 30,
-'unauth_period': 0,
-'unauthorized_vlan_id': 0,
-'uri': '/dot1x/authenticator/C2'},
-{'authorized_vlan_id': 0,
-'cached_reauth_period': 0,
-'client_limit': 1,
-'control': 'DAPC_AUTO',
-'enforce_cache_reauth': False,
-'is_authenticator_enabled': True,
-'logoff_period': 300,
-'max_requests': 2,
-'port_id': 'C3',
-'quiet_period': 20,
-'reauth_period': 0,
-'server_timeout': 300,
-'supplicant_timeout': 30,
-'tx_period': 30,
-'unauth_period': 0,
-'unauthorized_vlan_id': 0,
-'uri': '/dot1x/authenticator/C3'},
-
+Get port settings.
 """
 from typing import List
 
@@ -83,6 +15,13 @@ class PortInfo:
     def __init__(self, api_client) -> None:
         self.api_client = api_client
         self.port_list = []
+
+    def get_ports_jsondata(self) -> dict:
+        """
+        Get all ports.
+        """
+        data = self.api_client.get('ports')
+        return data['port_element']
 
     def get_dot1x_json_data(self) -> dict:
         """
@@ -111,14 +50,16 @@ class PortInfo:
 
     def set_port_list(self):
         """
-        Set ports to list.
+        set ports list. Add data from ports, dot1x, macauth and vlan-ports.
         """
+        ports = self.get_ports_jsondata()
         dot1x_json = self.get_dot1x_json_data()
         macauth_json = self.get_macauth_json_data()
         vlan_json = self.get_vlan_json_Data()
+
         self.port_list = []
-        for entry in dot1x_json:
-            port_id = entry['port_id']
+        for entry in ports:
+            port_id = entry['id']
             self.port_list.append(
                 Port(
                     port_id=port_id,
@@ -130,6 +71,7 @@ class PortInfo:
                         port_id=port_id, vlan_json_data=vlan_json
                     ),
                     tagged=self.vlan_tagged(port_id=port_id, vlan_json_data=vlan_json),
+                    trunk_group=entry['trunk_group'],
                 )
             )
 
@@ -145,12 +87,18 @@ class PortInfo:
         """
         Get tagged vlan on port_id.
         """
+        tagged_vlans = []
         for entry in vlan_json_data:
             if (
                 entry['port_id'] == port_id
                 and entry['port_mode'] == 'POM_TAGGED_STATIC'
             ):
-                return entry['vlan_id']
+                tagged_vlans.append(entry['vlan_id'])
+
+        if len(tagged_vlans) > 0:
+            return tagged_vlans
+        # elif len(tagged_vlans) == 1:
+        #     return tagged_vlans  # [0]
 
     def dot1x_enabled(self, port_id: str, dot1x_json: List[dict]) -> bool:
         """
