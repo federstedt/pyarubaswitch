@@ -3,12 +3,12 @@
 from .api_engine import PyAosSwitch
 from .get_loop_protect import LoopProtect
 from .get_mac_table import MacAddressTable
-from .get_port_vlans import Vlaninfo
 from .get_snmpv3_info import Snmpv3Info
 from .get_sntp import SntpInfo
 from .get_stp_info import StpInfo
 from .interface_info import InterfaceInfo
 from .lldp_neighbours import LLdpInfo
+from .port_info import PortInfo
 from .system_status import SystemStatus
 from .telnet_info import TelnetInfo
 
@@ -74,12 +74,6 @@ class ArubaSwitchClient(object):
         lldp = LLdpInfo(api_client=self.api_client)
         return lldp.get_neighbors()
 
-    def get_port_vlan(self, port):
-        """Returns port info object, containing all vlans on that port untag/tagged"""
-        vlan_info = Vlaninfo(api_client=self.api_client)
-        port_info = vlan_info.port_vlans(port)
-        return port_info
-
     def get_snmpv3(self):
         """Returns snmpv3 info object"""
         snmpv3_info = Snmpv3Info(api_client=self.api_client)
@@ -105,12 +99,14 @@ class ArubaSwitchClient(object):
         mac_table = mac_table_info.get_mac_table()
         return mac_table
 
-    def get_vlan_ports(self):
+    def get_port_info(self):
         """
-        Return vlan info for all ports.
+        Return list of Port objects with auth settings info.
+        Vlan, untag, tag and authmode on port.
         """
-        vlan_data = Vlaninfo(api_client=self.api_client).vlan_data
-        return vlan_data
+        port_info = PortInfo(api_client=self.api_client)
+        port_info.set_port_list()
+        return port_info.port_list
 
     def get_transceivers(self):
         transceivers_data = InterfaceInfo(api_client=self.api_client).get_transceivers()

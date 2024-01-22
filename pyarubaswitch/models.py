@@ -54,10 +54,21 @@ class Snmpv3(BaseModel):
     only_v3: bool
 
 
-class VlanPort(BaseModel):
+class Port(BaseModel):
+    """
+    Port info model.
+    vlan tagged or untagged
+    auth.mode
+    """
+
     port_id: str  # str becase can be: 1 or 1/1/1 or a16
     untagged: Optional[int] = None
     tagged: Optional[int] = None
+    dot1x_enabled: Optional[bool] = None
+    macauth_enabled: Optional[bool] = None
+
+
+class VlanPort(Port):
     missing_untagged: Optional[List[int]] = []
     missing_tagged: Optional[List[int]] = []
 

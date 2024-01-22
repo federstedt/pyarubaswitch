@@ -11,17 +11,17 @@ def export_transceivers_csv(switches, filename):
     :switches list of switch objects
     : filename string, filename of csvfile
     """
-    with open(file=filename, mode="w", encoding="utf-8-sig") as f:
+    with open(file=filename, mode='w', encoding='utf-8-sig') as f:
         writer = csv.writer(f)
 
         # header
         header = [
-            "switch_ip",
-            "part_number",
-            "port_id",
-            "product_number",
-            "serial_number",
-            "type",
+            'switch_ip',
+            'part_number',
+            'port_id',
+            'product_number',
+            'serial_number',
+            'type',
         ]
         writer.writerow(header)
 
@@ -67,10 +67,10 @@ def models_to_csv(
     fields = list(sample_dict.keys())
 
     if append:
-        mode = "a"
+        mode = 'a'
     else:
-        mode = "w"
-    with open(csv_filepath, mode=mode, encoding="utf-8-sig") as out_file:
+        mode = 'w'
+    with open(csv_filepath, mode=mode, encoding='utf-8-sig') as out_file:
         writer = csv.DictWriter(out_file, fieldnames=fields)
         # write header
         writer.writeheader()
