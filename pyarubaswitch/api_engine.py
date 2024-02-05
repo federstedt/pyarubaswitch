@@ -25,7 +25,7 @@ import requests
 # ignore ssl cert warnings (for labs)
 import urllib3
 
-from .exeptions import ArubaApiError
+from .exeptions import ArubaApiError, ArubaApiLoginError, ArubaApiTimeOut
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -111,11 +111,15 @@ class PyAosSwitch(object):
                 if self.error == None:
                     self.error = {}
                     self.error['login_error'] = r
-
-        except Exception as e:
-            if self.error == None:
-                self.error = {}
-            self.error['login_error'] = e
+        except requests.exceptions.Timeout as exc:
+            raise ArubaApiLoginError(408, 'Request has timed out.') from exc
+        except requests.HTTPError as exc:
+            raise ArubaApiLoginError(
+                status_code=exc.response.status_code,
+                message=f'{str(r.json())}',
+            ) from exc
+        except requests.exceptions.RequestException as exc:
+            raise ArubaApiLoginError(500, str(exc)) from exc
 
     def logout(self):
         """Logout from the switch. Using token from login function. Makes sure switch doesn't run out of sessions."""
@@ -156,27 +160,22 @@ class PyAosSwitch(object):
             headers = {'cookie': self.cookie}
         else:
             headers = None
-        try:
-            r = self.session.get(
-                url, timeout=self.timeout, verify=self.validate_ssl, headers=headers
-            )
-            r.raise_for_status()
 
-            if r.status_code == 200:
-                json_resp = r.json()
+        r = self.session.get(
+            url, timeout=self.timeout, verify=self.validate_ssl, headers=headers
+        )
+        r.raise_for_status()
 
-                if self.verbose:
-                    print('rest-version data:')
-                    print(json_resp)
-                return json_resp
-            else:
-                print(f'Error getting rest version from {url}')
-                print(r)
+        if r.status_code == 200:
+            json_resp = r.json()
 
-        except Exception as e:
-            if self.error == None:
-                self.error = {}
-            self.error['version_error'] = e
+            if self.verbose:
+                print('rest-version data:')
+                print(json_resp)
+            return json_resp
+        else:
+            print(f'Error getting rest version from {url}')
+            print(r)
 
     def set_rest_version(self):
         """
@@ -199,6 +198,8 @@ class PyAosSwitch(object):
             # > ver7 not equals legacy logins without session cookie
             if self.rest_verion_int > 6:
                 self.legacy_api = False
+            elif self.rest_verion_int < 6:
+                self.legacy_api = True
         else:
             print('Error getting switch version')
 
@@ -235,11 +236,11 @@ class PyAosSwitch(object):
             json_response = r.json()
             return json_response
         except requests.exceptions.Timeout as exc:
-            raise ArubaApiError(408, 'Request has timed out.') from exc
+            raise ArubaApiTimeOut(408, 'Request has timed out.') from exc
         except requests.HTTPError as exc:
             raise ArubaApiError(
-                exc.response.status_code,
-                f'{str(r.json())} , using: {method} , header {headers}',
+                status_code=exc.response.status_code,
+                message=f'{str(r.json())} , using: {method} , header {headers}',
             ) from exc
         except requests.exceptions.RequestException as exc:
             raise ArubaApiError(500, str(exc)) from exc
