@@ -1,6 +1,14 @@
+class APIClientError(Exception):
+    """
+    Generic error from the client.
+    """
+
+    pass
+
+
 class ArubaApiError(Exception):
     """
-    Generic Api Error
+    Error from API endpoint communications
     """
 
     def __init__(self, status_code, message) -> None:

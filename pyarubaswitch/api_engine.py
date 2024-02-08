@@ -25,7 +25,13 @@ import requests
 # ignore ssl cert warnings (for labs)
 import urllib3
 
-from .exeptions import ArubaApiError, ArubaApiLoginError, ArubaApiTimeOut
+from .exeptions import (
+    APIClientError,
+    ArubaApiError,
+    ArubaApiLoginError,
+    ArubaApiTimeOut,
+)
+from .logger import get_logger
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -43,17 +49,14 @@ class PyAosSwitch(object):
         rest_version=7,
     ):
         """ArubaOS-Switch API client."""
-        if SSL:
-            self.protocol = 'https'
-        else:
-            self.protocol = 'http'
 
         self.session = None
-        self.ip_addr = ip_addr
+        self.__ip_addr = ip_addr
         self.verbose = verbose
         self.timeout = timeout
         # set to Exeption if there is a error with getting version or login
         self.error = None
+        self.__ssl = SSL
         self.validate_ssl = validate_ssl
         # set rest-api version
         self.rest_verion_int = rest_version
@@ -65,10 +68,10 @@ class PyAosSwitch(object):
 
         self.cookie = None
 
-        self.set_api_url()
-
         self.username = username
         self.password = password
+
+        self.__log_level = 'warning'
 
         if self.verbose:
             print(f'Settings:')
@@ -76,8 +79,66 @@ class PyAosSwitch(object):
             print(f'timeout: {self.timeout}, api-version: {self.version}')
             print(f'api-url: {self.api_url}')
 
-    def set_api_url(self):
-        self.api_url = f'{self.protocol}://{self.ip_addr}/rest/{self.version}/'
+    @property
+    def log_level(self):
+        """
+        Returns:
+            String representing log_level of logger.
+        """
+        return self.__log_level
+
+    @log_level.setter
+    def log_level(self, level):
+        """
+        Setter method of log_level.
+
+        Args:
+            level(str): String representing a logging level.
+        """
+        if isinstance(level, str):
+            self.__log_level = level
+        else:
+            raise APIClientError('logging level provided is not a string.')
+
+    @property
+    def logger(self):
+        """
+        logging.Logger object.
+        """
+        return get_logger(self.log_level)
+
+    @property
+    def protocol(self):
+        """
+        Protocol for REST communicaitons.
+        Either http or https.
+
+        Based on SSL=True or False.
+        """
+        if self.__ssl:
+            return 'https'
+        else:
+            return 'http'
+
+    @property
+    def ip_addr(self):
+        """
+        IP-Address of switch.
+        """
+        return self.__ip_addr
+
+    @ip_addr.setter
+    def ip_addr(self, value):
+        """
+        Set IP-Address of the switch.
+
+        value(str): Ip-address in string format.
+        """
+        self.__ip_addr = value
+
+    @property
+    def api_url(self):
+        return f'{self.protocol}://{self.ip_addr}/rest/{self.version}/'
 
     def login(self):
         """Login to switch with username and password, get token. Return token"""
