@@ -18,10 +18,10 @@ tests/pyarcentral_test.py .........                                             
 
 import pytest
 
-from pyarubaswitch.aruba_switch_client import ArubaSwitchClient
+from pyarubaswitch import PyAosSwitch
 from pyarubaswitch.config_reader import ConfigReader
 from pyarubaswitch.logger import get_logger
-from pyarubaswitch.system_status import SystemInfo
+from pyarubaswitch.system_status import SystemStatus
 
 CONFIG = ConfigReader('vars.yaml')
 SWITCH_IP = '192.168.119.250'
@@ -30,7 +30,7 @@ logger = get_logger(log_level='INFO')
 
 
 @pytest.fixture(scope='module')
-def client_fixture() -> ArubaSwitchClient:
+def client_fixture() -> PyAosSwitch:
     """
     Test fixture for api-client.
     """
@@ -53,13 +53,13 @@ def test_get_client_from_file(client_fixture):
     Get api-client from file and login to the switch.
     """
     client_fixture.login()
-    assert isinstance(client_fixture, ArubaSwitchClient)
+    assert isinstance(client_fixture, PyAosSwitch)
 
 
 def test_get_systemstatus(client_fixture):
     """
     Test getting system status.
     """
-    system_status = client_fixture.get_system_status()
+    system_status = SystemStatus.from_api(api_client=client_fixture)
     logger.info(system_status)
-    assert isinstance(system_status, SystemInfo)
+    assert isinstance(system_status, SystemStatus)

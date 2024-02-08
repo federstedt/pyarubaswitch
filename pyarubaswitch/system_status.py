@@ -1,22 +1,22 @@
-from .models import SystemInfo
+from pydantic import BaseModel
 
-class SystemStatus(object):
-
-    def __init__(self, api_client):
-        self.api_client = api_client
-
-    def get_system_info(self):
-        sys_json = self.api_client.get('system/status')
-
-        if not self.api_client.error and sys_json:
-
-            sysinfo = SystemInfo(name = sys_json["name"], hw_rev = sys_json['hardware_revision'],
-                                 fw_ver = sys_json['firmware_version'], serial= sys_json['serial_number'], mac_addr = sys_json['base_ethernet_address']['octets'])
-
-            return sysinfo
-        elif self.api_client.error:
-            print(self.api_client.error)
-            return None
+from .api_engine import PyAosSwitch
 
 
+class SystemStatus(BaseModel):
+    name: str
+    hardware_revision: str
+    firmware_version: str
+    serial_number: str
+    base_ethernet_address: str
 
+    @classmethod
+    def from_api(cls, api_client: PyAosSwitch):
+        sys_status = api_client.get('system/status')
+        return cls(
+            name=sys_status['name'],
+            hardware_revision=sys_status['hardware_revision'],
+            firmware_version=sys_status['firmware_version'],
+            serial_number=sys_status['serial_number'],
+            base_ethernet_address=sys_status['base_ethernet_address']['octets'],
+        )

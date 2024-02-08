@@ -44,11 +44,6 @@ class ArubaSwitchClient(object):
             rest_version=self.rest_version,
         )
 
-    def get_system_status(self):
-        """Returns SystemInfo object with name, firmware status etc"""
-        system_info = SystemStatus(api_client=self.api_client)
-        return system_info.get_system_info()
-
     def set_rest_version(self):
         """Gets available rest-api version from switch. Set to latest."""
         self.api_client.set_rest_version()

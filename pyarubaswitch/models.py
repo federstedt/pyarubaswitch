@@ -3,14 +3,6 @@ from typing import List, Optional  # List is required before python3.10
 from pydantic import BaseModel
 
 
-class SystemInfo(BaseModel):
-    name: str
-    hw_rev: str
-    fw_ver: str
-    serial: str
-    mac_addr: str
-
-
 class MacTableElement(BaseModel):
     mac_address: str
     port_id: str
