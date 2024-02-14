@@ -77,13 +77,16 @@ def test_get_mac_table(client_fixture):
     assert isinstance(mac_table.entries[0], MacTableElement)
 
 
-def test_get_ports_inof(client_fixture):
+def test_get_ports_info(client_fixture):
     """
     Test getting port info from switch.
     Contains vlan info, dot1x_auth, mac_auth, lacp settings.
     """
     port_info = client_fixture.get_ports_info()
-    logger.info(port_info)
+    logger.info(f'port-info: {port_info}')
+    # TODO: varför är port_info tom ? men port_list har data ?
+    for port in port_info.port_list:
+        logger.info(f'Port: {port}')
     assert isinstance(port_info, PortInfo)
     assert isinstance(port_info.port_list[0], Port)
     # TODO: skriv mer detaljerade tests för denna ?

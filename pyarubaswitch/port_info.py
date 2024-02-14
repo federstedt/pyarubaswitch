@@ -37,20 +37,20 @@ class PortInfo(BaseModel):
     @classmethod
     def from_api(cls, api_client: PyAosSwitchClient) -> 'PortInfo':
         port_info = cls()
-        port_info.populate_port_list(api_client)
+        port_info.port_list = port_info.get_port_data(api_client)
         return port_info
 
-    def populate_port_list(self, api_client: PyAosSwitchClient):
+    def get_port_data(self, api_client: PyAosSwitchClient):
         ports = self.get_ports_jsondata(api_client)
         dot1x_json = self.get_dot1x_json_data(api_client)
         macauth_json = self.get_macauth_json_data(api_client)
         vlan_json = self.get_vlan_json_data(api_client)
 
-        # Create a new list to hold the updated port_list
-        new_port_list = []
+        # list containing all ports and their info
+        portdata_list = []
         for entry in ports:
             port_id = entry['id']
-            new_port_list.append(
+            portdata_list.append(
                 Port(
                     port_id=port_id,
                     dot1x_enabled=self.dot1x_enabled(port_id, dot1x_json=dot1x_json),
@@ -64,10 +64,8 @@ class PortInfo(BaseModel):
                     trunk_group=entry['trunk_group'],
                 )
             )
-
-        # TODO: använder denna verkligen setter ? fundera över hur den ska va snyggare
         # Update port_list using the setter method
-        self.port_list = new_port_list
+        return portdata_list
 
     # Define the property getter and setter for port_list
     @property
