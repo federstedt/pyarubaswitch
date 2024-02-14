@@ -18,9 +18,11 @@ tests/pyarcentral_test.py .........                                             
 
 import pytest
 
-from pyarubaswitch import PyAosSwitch
 from pyarubaswitch.config_reader import ConfigReader
 from pyarubaswitch.logger import get_logger
+from pyarubaswitch.mac_table import MacAddressTable, MacTableElement
+from pyarubaswitch.port_info import Port, PortInfo
+from pyarubaswitch.pyaos_switch_client import PyAosSwitchClient
 from pyarubaswitch.system_status import SystemStatus
 
 CONFIG = ConfigReader('vars.yaml')
@@ -30,7 +32,7 @@ logger = get_logger(log_level='INFO')
 
 
 @pytest.fixture(scope='module')
-def client_fixture() -> PyAosSwitch:
+def client_fixture() -> PyAosSwitchClient:
     """
     Test fixture for api-client.
     """
@@ -53,13 +55,35 @@ def test_get_client_from_file(client_fixture):
     Get api-client from file and login to the switch.
     """
     client_fixture.login()
-    assert isinstance(client_fixture, PyAosSwitch)
+    assert isinstance(client_fixture, PyAosSwitchClient)
 
 
 def test_get_systemstatus(client_fixture):
     """
     Test getting system status.
     """
-    system_status = SystemStatus.from_api(api_client=client_fixture)
-    logger.info(system_status)
+    system_status = client_fixture.get_system_status()
+    logger.debug(system_status)
     assert isinstance(system_status, SystemStatus)
+
+
+def test_get_mac_table(client_fixture):
+    """
+    Test getting mac-address table.
+    """
+    mac_table = client_fixture.get_mac_table()
+    logger.debug(mac_table)
+    assert isinstance(mac_table, MacAddressTable)
+    assert isinstance(mac_table.entries[0], MacTableElement)
+
+
+def test_get_ports_inof(client_fixture):
+    """
+    Test getting port info from switch.
+    Contains vlan info, dot1x_auth, mac_auth, lacp settings.
+    """
+    port_info = client_fixture.get_ports_info()
+    logger.info(port_info)
+    assert isinstance(port_info, PortInfo)
+    assert isinstance(port_info.port_list[0], Port)
+    # TODO: skriv mer detaljerade tests för denna ?

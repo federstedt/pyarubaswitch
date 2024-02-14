@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from .api_engine import PyAosSwitch
+from .pyaos_switch_client import PyAosSwitchClient
 
 
 class SystemStatus(BaseModel):
@@ -11,7 +11,7 @@ class SystemStatus(BaseModel):
     base_ethernet_address: str
 
     @classmethod
-    def from_api(cls, api_client: PyAosSwitch):
+    def from_api(cls, api_client: PyAosSwitchClient):
         sys_status = api_client.get('system/status')
         return cls(
             name=sys_status['name'],

@@ -3,12 +3,6 @@ from typing import List, Optional  # List is required before python3.10
 from pydantic import BaseModel
 
 
-class MacTableElement(BaseModel):
-    mac_address: str
-    port_id: str
-    vland_id: int
-
-
 class STP(BaseModel):
     enabled: bool
     prio: int

@@ -36,7 +36,7 @@ from .logger import get_logger
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-class PyAosSwitch(object):
+class PyAosSwitchClient(object):
     def __init__(
         self,
         ip_addr,
@@ -305,3 +305,36 @@ class PyAosSwitch(object):
             ) from exc
         except requests.exceptions.RequestException as exc:
             raise ArubaApiError(500, str(exc)) from exc
+
+    #### Higher level functions for getting specific endpoints.
+    def get_system_status(self):
+        """Retrieve system status using SystemStatus classmethod.
+
+        Returns:
+            SystemStatus object.
+        """
+        from .system_status import SystemStatus  # Deferred import
+
+        return SystemStatus.from_api(self)
+
+    def get_mac_table(self):
+        """
+        Get mac-address table from switch using classmethod.
+
+        Returns:
+            MacAddressTable object containing MacTableElement.
+        """
+        from .mac_table import MacAddressTable
+
+        return MacAddressTable.from_api(self)
+
+    def get_ports_info(self):
+        """
+        Get PortInfo from all switchports.
+
+        Returns:
+            PortInfo(list of Port objects)
+        """
+        from .port_info import PortInfo
+
+        return PortInfo.from_api(self)

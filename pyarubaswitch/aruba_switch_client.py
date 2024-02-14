@@ -1,18 +1,19 @@
 # a class that has a lot of methods for getting relevant data from the api client
 # uses the client to pass a api_client object, object is used for running calls for getting the data
-from .api_engine import PyAosSwitch
 from .get_loop_protect import LoopProtect
-from .get_mac_table import MacAddressTable
 from .get_snmpv3_info import Snmpv3Info
 from .get_sntp import SntpInfo
 from .get_stp_info import StpInfo
 from .interface_info import InterfaceInfo
 from .lldp_neighbours import LLdpInfo
+from .mac_table import MacAddressTable
 from .port_info import PortInfo
+from .pyaos_switch_client import PyAosSwitch
 from .system_status import SystemStatus
 from .telnet_info import TelnetInfo
 
 
+#### TODO: OLD class to be deprecated !! replaced with class methods and pyaos_switch_client
 class ArubaSwitchClient(object):
     def __init__(
         self,
@@ -43,11 +44,6 @@ class ArubaSwitchClient(object):
             validate_ssl=self.validate_ssl,
             rest_version=self.rest_version,
         )
-
-    def set_rest_version(self):
-        """Gets available rest-api version from switch. Set to latest."""
-        self.api_client.set_rest_version()
-        self.rest_version = self.api_client.version
 
     def get_telnet_server_status(self):
         """Returns true / false status of telnet server"""
@@ -89,28 +85,6 @@ class ArubaSwitchClient(object):
         un_loop_protected = LoopProtect(api_client=self.api_client)
         return un_loop_protected.get_unprotected_ports()
 
-    def get_mac_address_table(self):
-        mac_table_info = MacAddressTable(api_client=self.api_client)
-        mac_table = mac_table_info.get_mac_table()
-        return mac_table
-
-    def get_port_info(self):
-        """
-        Return list of Port objects with auth settings info.
-        Vlan, untag, tag and authmode on port.
-        """
-        port_info = PortInfo(api_client=self.api_client)
-        port_info.set_port_list()
-        return port_info.port_list
-
     def get_transceivers(self):
         transceivers_data = InterfaceInfo(api_client=self.api_client).get_transceivers()
         return transceivers_data
-
-    def logout(self):
-        """Logout from switch"""
-        self.api_client.logout()
-
-    def login(self):
-        """Manually logon to the switch. Optional as API-client will login automatically."""
-        self.api_client.login()

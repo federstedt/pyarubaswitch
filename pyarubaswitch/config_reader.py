@@ -2,7 +2,7 @@ from pathlib import Path
 
 import yaml
 
-from .api_engine import PyAosSwitch
+from .pyaos_switch_client import PyAosSwitchClient
 
 
 class ConfigReader(object):
@@ -31,14 +31,14 @@ class ConfigReader(object):
 
     def get_apiclient_from_file(
         self, ip_addr: str, verbose: bool = False, SSL: bool = False, timeout: int = 15
-    ) -> PyAosSwitch:
+    ) -> PyAosSwitchClient:
         """
         Takes yaml file, returns ArubaSwitchClient object
 
         args:
         ip_addr(str)Optional: str format ip-adress of switch to return a client.
         """
-        return PyAosSwitch(
+        return PyAosSwitchClient(
             ip_addr=ip_addr,
             username=self.username,
             password=self.password,

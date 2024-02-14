@@ -1,9 +1,4 @@
-from pyarubaswitch.aruba_switch_client import ArubaSwitchClient
-from pyarubaswitch.api_engine import PyAosSwitch
 from pyarubaswitch.common_ops import shorten_numberlist
+from pyarubaswitch.pyaos_switch_client import PyAosSwitchClient
 
-__all__ = [
-    'ArubaSwitchClient',
-    'PyAosSwitch',
-    'shorten_numberlist'
-]
+__all__ = ['PyAosSwitchClient', 'shorten_numberlist']

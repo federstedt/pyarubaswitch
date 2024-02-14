@@ -1,66 +1,56 @@
-"""
-Get port settings.
-"""
-from typing import List
+from typing import List, Optional
 
-from .exeptions import ArubaPortError
-from .models import Port
+from pydantic import BaseModel
+
+from .pyaos_switch_client import PyAosSwitchClient
 
 
-class PortInfo:
-    """
-    Auth and vlan config info from ports on switch.
-    """
+class Port(BaseModel):
+    port_id: str
+    untagged: Optional[int] = None
+    tagged: Optional[List[int]] = None
+    dot1x_enabled: Optional[bool] = None
+    macauth_enabled: Optional[bool] = None
+    lacp_status: Optional[str] = None
+    trunk_group: Optional[str] = None
 
-    def __init__(self, api_client) -> None:
-        self.api_client = api_client
-        self.port_list = []
 
-    def get_ports_jsondata(self) -> dict:
-        """
-        Get all ports.
-        """
-        data = self.api_client.get('ports')
-        return data['port_element']
+class VlanPort(Port):
+    missing_untagged: Optional[List[int]] = []
+    missing_tagged: Optional[List[int]] = []
 
-    def get_dot1x_json_data(self) -> dict:
-        """
-        Returns all ports dot1x settings.
-        """
-        data = self.api_client.get('dot1x/authenticator')[
-            'dot1x_authenticator_port_element'
-        ]
-        return data
+    def check_desired_vlans(self, desired_untag, desired_tag):
+        """Returns missing vlans that are defined as desired untag/tag"""
+        for vlan in desired_untag:
+            if vlan not in self.untagged:
+                self.missing_untagged.append(vlan)
+        for vlan in desired_tag:
+            if vlan not in self.tagged:
+                self.missing_tagged.append(vlan)
 
-    def get_macauth_json_data(self) -> dict:
-        """
-        Returns all ports macauth settings.
-        """
-        data = self.api_client.get('mac-authentication/port')[
-            'mac_authentication_port_element'
-        ]
-        return data
+        return self.missing_untagged, self.missing_tagged
 
-    def get_vlan_json_Data(self) -> dict:
-        """
-        Vlans ports data.
-        """
-        data = self.api_client.get('vlans-ports')['vlan_port_element']
-        return data
 
-    def set_port_list(self):
-        """
-        set ports list. Add data from ports, dot1x, macauth and vlan-ports.
-        """
-        ports = self.get_ports_jsondata()
-        dot1x_json = self.get_dot1x_json_data()
-        macauth_json = self.get_macauth_json_data()
-        vlan_json = self.get_vlan_json_Data()
+class PortInfo(BaseModel):
+    _port_list: List[Port] = []  # Use a private attribute to store port_list
 
-        self.port_list = []
+    @classmethod
+    def from_api(cls, api_client: PyAosSwitchClient) -> 'PortInfo':
+        port_info = cls()
+        port_info.populate_port_list(api_client)
+        return port_info
+
+    def populate_port_list(self, api_client: PyAosSwitchClient):
+        ports = self.get_ports_jsondata(api_client)
+        dot1x_json = self.get_dot1x_json_data(api_client)
+        macauth_json = self.get_macauth_json_data(api_client)
+        vlan_json = self.get_vlan_json_data(api_client)
+
+        # Create a new list to hold the updated port_list
+        new_port_list = []
         for entry in ports:
             port_id = entry['id']
-            self.port_list.append(
+            new_port_list.append(
                 Port(
                     port_id=port_id,
                     dot1x_enabled=self.dot1x_enabled(port_id, dot1x_json=dot1x_json),
@@ -75,18 +65,46 @@ class PortInfo:
                 )
             )
 
-    def vlan_untagged(self, port_id: str, vlan_json_data: List[dict]) -> int:
-        """
-        Get untagged vlan on port_id.
-        """
+        # TODO: använder denna verkligen setter ? fundera över hur den ska va snyggare
+        # Update port_list using the setter method
+        self.port_list = new_port_list
+
+    # Define the property getter and setter for port_list
+    @property
+    def port_list(self):
+        return self._port_list
+
+    @port_list.setter
+    def port_list(self, value):
+        self._port_list = value
+
+    # Define the remaining methods as before
+    def get_ports_jsondata(self, api_client: PyAosSwitchClient) -> List[dict]:
+        data = api_client.get('ports')
+        return data['port_element']
+
+    def get_dot1x_json_data(self, api_client: PyAosSwitchClient) -> List[dict]:
+        data = api_client.get('dot1x/authenticator')['dot1x_authenticator_port_element']
+        return data
+
+    def get_macauth_json_data(self, api_client: PyAosSwitchClient) -> List[dict]:
+        data = api_client.get('mac-authentication/port')[
+            'mac_authentication_port_element'
+        ]
+        return data
+
+    def get_vlan_json_data(self, api_client: PyAosSwitchClient) -> List[dict]:
+        data = api_client.get('vlans-ports')['vlan_port_element']
+        return data
+
+    def vlan_untagged(self, port_id: str, vlan_json_data: List[dict]) -> Optional[int]:
         for entry in vlan_json_data:
             if entry['port_id'] == port_id and entry['port_mode'] == 'POM_UNTAGGED':
                 return entry['vlan_id']
 
-    def vlan_tagged(self, port_id: str, vlan_json_data: List[dict]) -> List:
-        """
-        Get tagged vlan on port_id.
-        """
+    def vlan_tagged(
+        self, port_id: str, vlan_json_data: List[dict]
+    ) -> Optional[List[int]]:
         tagged_vlans = []
         for entry in vlan_json_data:
             if (
@@ -95,33 +113,23 @@ class PortInfo:
             ):
                 tagged_vlans.append(entry['vlan_id'])
 
-        if len(tagged_vlans) > 0:
+        if tagged_vlans:
             return tagged_vlans
-        # elif len(tagged_vlans) == 1:
-        #     return tagged_vlans  # [0]
 
     def dot1x_enabled(self, port_id: str, dot1x_json: List[dict]) -> bool:
-        """
-        Args:
-            port_id(str): port_id to check.
-        Returns:
-            True if port is dotx_enabled.
-        """
         for entry in dot1x_json:
-            if entry['port_id'] == port_id:
-                if entry['is_authenticator_enabled'] is True:
-                    return True
+            if (
+                entry['port_id'] == port_id
+                and entry['is_authenticator_enabled'] is True
+            ):
+                return True
         return False
 
     def macauth_enabled(self, port_id: str, macauth_json: List[dict]) -> bool:
-        """
-        Args:
-            port_id(str): port_id to check.
-        Returns:
-            True if port is macuath is enabled.
-        """
         for entry in macauth_json:
-            if entry['port_id'] == port_id:
-                if entry['is_mac_authentication_enabled'] is True:
-                    return True
+            if (
+                entry['port_id'] == port_id
+                and entry['is_mac_authentication_enabled'] is True
+            ):
+                return True
         return False
