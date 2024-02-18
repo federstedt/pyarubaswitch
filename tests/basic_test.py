@@ -26,11 +26,11 @@ from pyarubaswitch.port_info import Port, PortInfo
 from pyarubaswitch.pyaos_switch_client import PyAosSwitchClient
 from pyarubaswitch.system_status import SystemStatus
 
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = 'info'
 CONFIG = ConfigReader('vars.yaml')
 SWITCH_IP = '192.168.119.250'
 
-test_logger = get_logger(log_level=LOG_LEVEL)
+test_logger = get_logger(log_level=LOG_LEVEL, name=__name__)
 
 
 @pytest.fixture(scope='module')
@@ -75,7 +75,7 @@ def test_get_mac_table(client_fixture):
     Test getting mac-address table.
     """
     mac_table = client_fixture.get_mac_table()
-    test_logger.debug(mac_table)
+    test_logger.debug('mac_table: %s', mac_table)
     assert isinstance(mac_table, MacAddressTable)
     assert isinstance(mac_table.entries[0], MacTableElement)
 

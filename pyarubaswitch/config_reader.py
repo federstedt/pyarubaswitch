@@ -24,6 +24,14 @@ class ConfigReader(object):
             self.username = self.vars['username']
             self.password = self.vars['password']
             self.switches = self.vars['switches']
+            if 'use_ssl' in self.vars:
+                self.use_ssl = self.vars['use_ssl']
+            else:
+                self.use_ssl = False
+            if 'log_level' in self.vars:
+                self.log_level = self.vars['log_level']
+            else:
+                self.log_level = None
             if 'site_name' in self.vars:
                 self.site_name = self.vars['site_name']
         else:
@@ -45,6 +53,18 @@ class ConfigReader(object):
         Returns:
             PyAosSwitchClient: API-Client object.
         """
-        return PyAosSwitchClient(
-            ip_addr=ip_addr, username=self.username, password=self.password
-        )
+        if self.log_level is not None:
+            return PyAosSwitchClient(
+                ip_addr=ip_addr,
+                username=self.username,
+                password=self.password,
+                SSL=self.use_ssl,
+                log_level=self.log_level,
+            )
+        else:
+            return PyAosSwitchClient(
+                ip_addr=ip_addr,
+                username=self.username,
+                password=self.password,
+                SSL=self.use_ssl,
+            )

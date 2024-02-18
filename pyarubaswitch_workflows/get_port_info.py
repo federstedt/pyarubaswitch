@@ -1,15 +1,20 @@
 import csv
 from typing import List
 
-from pyarubaswitch.aruba_switch_client import ArubaSwitchClient
 from pyarubaswitch.config_reader import ConfigReader
-from pyarubaswitch.exeptions import ArubaApiError, ArubaApiLoginError, ArubaApiTimeOut
+from pyarubaswitch.exeptions import (
+    ArubaApiError,
+    ArubaApiLoginError,
+    ArubaApiLogoutError,
+    ArubaApiTimeOut,
+)
 from pyarubaswitch.models import VlanPort
+from pyarubaswitch.pyaos_switch_client import PyAosSwitchClient
 
 from .filehandling import models_to_csv
 
 
-def get_port_vlans(api_client: ArubaSwitchClient) -> List[VlanPort]:
+def get_port_vlans(api_client: PyAosSwitchClient) -> List[VlanPort]:
     """
     Get vlan info from switch ports.
     """
@@ -18,7 +23,7 @@ def get_port_vlans(api_client: ArubaSwitchClient) -> List[VlanPort]:
     return port_data
 
 
-def get_port_auth(api_client: ArubaSwitchClient):
+def get_port_auth(api_client: PyAosSwitchClient):
     """
     Get port auth_modes.
     """
@@ -49,14 +54,14 @@ def port_export_csv(filename: str, port_data: List[VlanPort]):
     )
 
 
-def get_status_and_portinfo(api_client: ArubaSwitchClient):
+def get_status_and_portinfo(api_client: PyAosSwitchClient):
     """
     Get system status and port info from switch.
     """
     switch_info = api_client.get_system_status()
-    port_info = api_client.get_port_info()
+    port_info = api_client.get_ports_info()
 
-    return switch_info, port_info
+    return switch_info, port_info.port_list
 
 
 def export_data_to_csv(csv_folder: str, switch_info, port_info):
@@ -76,8 +81,7 @@ def export_portvlans_from_switches(vars_file: str, csv_folder: str):
     config = ConfigReader(vars_file)
     for switch in config.switches:
         try:
-            client = config.get_apiclient_from_file(ip_addr=switch, SSL=True)
-            client.api_client.verbose = True
+            client = config.get_apiclient_from_file(ip_addr=switch)
             client.login()
         except ArubaApiLoginError as exc:
             try:
@@ -87,20 +91,24 @@ def export_portvlans_from_switches(vars_file: str, csv_folder: str):
                 print(f'Login to switch failed: {switch}')
                 sw_failed.append(switch)
 
-        try:
-            switch_info, port_info = get_status_and_portinfo(api_client=client)
-            export_data_to_csv(
-                csv_folder=csv_folder, switch_info=switch_info, port_info=port_info
-            )
-        except ArubaApiTimeOut as exc:
-            print(f'Request timeout to switch: {switch}')
-            sw_timeouts.append(switch)
-            sw_failed.append(switch)
-        except ArubaApiError as exc:
-            print(f'Error in retry of switch. {switch}')
-            sw_failed.append(switch)
-        finally:
-            client.api_client.logout()
+        if switch not in sw_failed:
+            try:
+                switch_info, port_info = get_status_and_portinfo(api_client=client)
+                export_data_to_csv(
+                    csv_folder=csv_folder, switch_info=switch_info, port_info=port_info
+                )
+            except ArubaApiTimeOut as exc:
+                print(f'Request timeout to switch: {switch}')
+                sw_timeouts.append(switch)
+                sw_failed.append(switch)
+            except ArubaApiError as exc:
+                print(f'Error in retry of switch. {switch}')
+                sw_failed.append(switch)
+            finally:
+                try:
+                    client.logout()
+                except ArubaApiLogoutError as exc:
+                    pass
 
-        print(f'Switches that timed out:\n {sw_timeouts}')
-        print(f'Failed getting data from switches:\n {sw_failed}')
+    print(f'Switches that timed out:\n {sw_timeouts}')
+    print(f'Failed getting data from switches:\n {sw_failed}')

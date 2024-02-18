@@ -3,7 +3,7 @@ import json
 
 import requests
 
-# ignore ssl cert warnings (for labs)
+# urlib3 enables option to ignore cert warnings
 import urllib3
 
 from .exeptions import (
@@ -14,9 +14,6 @@ from .exeptions import (
     ArubaApiTimeOut,
 )
 from .logger import get_logger
-
-# ignore ssl cert warnings (for labs)
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class PyAosSwitchClient(object):
@@ -31,11 +28,13 @@ class PyAosSwitchClient(object):
         timeout: int = 10,
         validate_ssl: bool = False,
         rest_version: int = 7,
+        log_level: str = 'warning',
     ):
         self.__ip_addr = ip_addr
         self.__timeout = timeout
         self.__ssl = SSL
         self.__validate_ssl = validate_ssl
+        self.set_cert_warn(validate_ssl)
 
         # set rest-api version
         self.__version = self.parse_restver(rest_version)
@@ -47,7 +46,7 @@ class PyAosSwitchClient(object):
         self.__username = username
         self.__password = password
 
-        self.__log_level = 'warning'
+        self.__log_level = log_level
         if self.log_level.upper() == 'DEBUG':
             self.output_settings()
 
@@ -161,7 +160,22 @@ class PyAosSwitchClient(object):
         Args:
             value(bool): Validate SSL certificate, True or False.
         """
+        self.set_cert_warn(value=value)
         self.__validate_ssl = value
+
+    def set_cert_warn(self, value: bool):
+        """
+        Make sure switch is using valid cert or not.
+        True: Validate the cert, False do NOT validate.
+        Usefull if using selfsigned
+        """
+        if value is False:
+            # ignore ssl cert warnings (for labs)
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        else:
+            import warnings
+
+            warnings.resetwarnings()
 
     @property
     def version(self) -> str:
