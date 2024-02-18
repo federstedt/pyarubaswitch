@@ -5,6 +5,14 @@ import yaml
 from .pyaos_switch_client import PyAosSwitchClient
 
 
+class ConfigParseError(Exception):
+    """
+    Error parsing config
+    """
+
+    pass
+
+
 class ConfigReader(object):
     def __init__(self, filepath):
         self.filepath = filepath
@@ -19,9 +27,7 @@ class ConfigReader(object):
             if 'site_name' in self.vars:
                 self.site_name = self.vars['site_name']
         else:
-            print('Error! No configfile was found:')
-            print(self.filepath)
-            exit(0)
+            raise ConfigParseError(f'Error! No configfile was found:\n{self.filepath}')
 
     def read_yaml(self, filename):
         """Get username password and IP of switches from file"""
@@ -37,6 +43,9 @@ class ConfigReader(object):
 
         args:
         ip_addr(str)Optional: str format ip-adress of switch to return a client.
+
+        Returns:
+            PyAosSwitchClient: API-Client object.
         """
         return PyAosSwitchClient(
             ip_addr=ip_addr,

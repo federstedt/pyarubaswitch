@@ -24,6 +24,14 @@ class ArubaApiLoginError(ArubaApiError):
     pass
 
 
+class ArubaApiLogoutError(ArubaApiError):
+    """
+    Error logging out from switch.
+    """
+
+    pass
+
+
 class ArubaApiTimeOut(Exception):
     """
     Timout calling API endpoint.

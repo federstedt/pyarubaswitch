@@ -7,16 +7,9 @@
 
 # TODO: justera timeout, satte till 10 i test syfte nu då jag får många timeouts på 5.
 
-# TODO: config_reader mer error output.
 # TODO: validera configen i config reader bättre
 # TODO: validera korrekt input i input_parser bättre
 # TODO: göm / gör password input hemlig med getpass ? https://docs.python.org/3/library/getpass.html
-
-
-# TODO: pysetup: requirements pyaml , requests
-
-# TODO: mer error output i funktioner ?
-
 
 import json
 
@@ -29,6 +22,7 @@ from .exeptions import (
     APIClientError,
     ArubaApiError,
     ArubaApiLoginError,
+    ArubaApiLogoutError,
     ArubaApiTimeOut,
 )
 from .logger import get_logger
@@ -54,8 +48,6 @@ class PyAosSwitchClient(object):
         self.__ip_addr = ip_addr
         self.verbose = verbose
         self.timeout = timeout
-        # set to Exeption if there is a error with getting version or login
-        self.error = None
         self.__ssl = SSL
         self.validate_ssl = validate_ssl
         # set rest-api version
@@ -141,7 +133,11 @@ class PyAosSwitchClient(object):
         return f'{self.protocol}://{self.ip_addr}/rest/{self.version}/'
 
     def login(self):
-        """Login to switch with username and password, get token. Return token"""
+        """
+        Login to switch with username and password, get token.
+        Store token in session (API-version > 5).
+        If using legacy api store token in self.cookie variable.
+        """
         if self.session == None:
             self.session = requests.session()
         url = self.api_url + 'login-sessions'
@@ -150,34 +146,29 @@ class PyAosSwitchClient(object):
             print(f'Logging into: {url}, with: {login_data}')
 
         try:
-            r = self.session.post(
+            response = self.session.post(
                 url,
                 data=json.dumps(login_data),
                 timeout=self.timeout,
                 verify=self.validate_ssl,
             )
-            r.raise_for_status()
+            response.raise_for_status()
 
-            if r.status_code == 201:
-                json_resp = r.json()
-                if self.verbose:
-                    print(f'login success! url: {url}')
-                    print('login data:')
-                    print(json_resp)
+            if response.status_code == 201:
+                json_resp = response.json()
                 if self.legacy_api:
                     self.cookie = json_resp['cookie']
             else:
-                print('Error login:')
-                print(r.status_code)
-                if self.error == None:
-                    self.error = {}
-                    self.error['login_error'] = r
+                raise ArubaApiLoginError(
+                    status_code=response.status_code,
+                    message=f'Error logging in to: {url}.\n{response}',
+                )
         except requests.exceptions.Timeout as exc:
             raise ArubaApiLoginError(408, 'Request has timed out.') from exc
         except requests.HTTPError as exc:
             raise ArubaApiLoginError(
                 status_code=exc.response.status_code,
-                message=f'{str(r.json())}',
+                message=f'{str(response.json())}',
             ) from exc
         except requests.exceptions.RequestException as exc:
             raise ArubaApiLoginError(500, str(exc)) from exc
@@ -185,30 +176,38 @@ class PyAosSwitchClient(object):
     def logout(self):
         """Logout from the switch. Using token from login function. Makes sure switch doesn't run out of sessions."""
         if self.session == None:
-            print('No session need to login first, before you can logout')
+            self.logger.info('No session need to login first, before you can logout')
         else:
             if self.legacy_api:
                 headers = {'cookie': self.cookie}
             else:
                 headers = None
             try:
-                logout = self.session.delete(
+                logout_resp = self.session.delete(
                     self.api_url + 'login-sessions',
                     timeout=self.timeout,
                     headers=headers,
                 )
-                logout.raise_for_status()
+                logout_resp.raise_for_status()
                 self.session.close()
                 if self.verbose:
                     print('Logged out successfully')
-            except Exception as e:
-                if self.error == None:
-                    self.error = {}
-                self.error['logout_error'] = e
+            except requests.exceptions.Timeout as exc:
+                raise ArubaApiLogoutError(408, 'Request has timed out.') from exc
+            except requests.HTTPError as exc:
+                raise ArubaApiLogoutError(
+                    status_code=exc.response.status_code,
+                    message=f'{str(logout_resp.json())}',
+                ) from exc
+            except requests.exceptions.RequestException as exc:
+                raise ArubaApiLogoutError(500, str(exc)) from exc
 
     def get_rest_version(self):
-        """GET switch RESTAPI version and return as string ie "7"
-        :return version latest supportert RESTversion in string format.
+        """
+        GET switch RESTAPI versions from switch.
+
+        Returns:
+            json_resp(dict): json response from api.
         """
         if self.session is None:
             self.login()
@@ -217,30 +216,40 @@ class PyAosSwitchClient(object):
         if self.verbose:
             print(f'Getting rest-api version from url: {url}')
 
-        if self.legacy_api:
-            headers = {'cookie': self.cookie}
-        else:
-            headers = None
+        # TODO: can be removed ? 18/2 2024 I commented this.
+        # if self.legacy_api:
+        #     headers = {'cookie': self.cookie}
+        # else:
+        #     headers = None
+        try:
+            resp = self.session.get(
+                url, timeout=self.timeout, verify=self.validate_ssl, headers=None
+            )
+            resp.raise_for_status()
 
-        r = self.session.get(
-            url, timeout=self.timeout, verify=self.validate_ssl, headers=headers
-        )
-        r.raise_for_status()
-
-        if r.status_code == 200:
-            json_resp = r.json()
+            if resp.status_code == 200:
+                json_resp = resp.json()
 
             if self.verbose:
                 print('rest-version data:')
                 print(json_resp)
-            return json_resp
-        else:
-            print(f'Error getting rest version from {url}')
-            print(r)
+                return json_resp
+            else:
+                raise ArubaApiError(status_code=resp.status_code, message=resp)
+        except requests.exceptions.Timeout as exc:
+            raise ArubaApiTimeOut(408, 'Request has timed out.') from exc
+        except requests.HTTPError as exc:
+            raise ArubaApiError(
+                status_code=exc.response.status_code,
+                message=f'{str(resp.json())}',
+            ) from exc
+        except requests.exceptions.RequestException as exc:
+            raise ArubaApiError(500, str(exc)) from exc
 
     def set_rest_version(self):
         """
-        Gets API latest supported apiversion from switch and uses that version for all future calls.
+        Get API latest supported apiversion from switch and uses that version for all future calls.
+        Sets version to self.rest_version variable in 'v7' format, and to self.rest_version_int in integer format.
         """
         versions = self.get_rest_version()
         if versions:
@@ -262,19 +271,24 @@ class PyAosSwitchClient(object):
             elif self.rest_verion_int < 6:
                 self.legacy_api = True
         else:
-            print('Error getting switch version')
+            raise APIClientError(
+                f'Error getting API-version from switch. Cannot parse: {versions}'
+            )
 
     def get(self, sub_url):
         """GET requests to the API. uses base-url + incoming-url call. Uses token from login function."""
         return self.invoke('GET', sub_url)
 
     def post(self):
-        """PUT requests to API. Uses base-url + incoming-url with incoming data to set. NOT ACTIVE YET!"""
+        """PUT requests to API. Uses base-url + incoming-url with incoming data to set. NOT IMPLEMENTED YET!"""
         pass
 
     def invoke(self, method, sub_url):
         """Invokes specified method on API url. GET/PUT/POST/DELETE etc.
-        Returns json response"""
+
+        Returns:
+            json_response(dict): json response from API.
+        """
         if self.session is None:
             self.login()
 
@@ -306,7 +320,10 @@ class PyAosSwitchClient(object):
         except requests.exceptions.RequestException as exc:
             raise ArubaApiError(500, str(exc)) from exc
 
-    #### Higher level functions for getting specific endpoints.
+    ####
+    #### Higher level functions for getting specific endpoints. #####
+    ####
+
     def get_system_status(self):
         """Retrieve system status using SystemStatus classmethod.
 
