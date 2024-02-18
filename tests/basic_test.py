@@ -15,6 +15,7 @@ tests/pyarcentral_test.py .........                                             
 #
 # pytest will run all files of the form test_*.py or *_test.py in the current directory and its subdirectories. More generally, it follows standard test discovery rules.
 # https://docs.pytest.org/en/6.2.x/
+from typing import List
 
 import pytest
 
@@ -25,10 +26,11 @@ from pyarubaswitch.port_info import Port, PortInfo
 from pyarubaswitch.pyaos_switch_client import PyAosSwitchClient
 from pyarubaswitch.system_status import SystemStatus
 
+LOG_LEVEL = 'INFO'
 CONFIG = ConfigReader('vars.yaml')
 SWITCH_IP = '192.168.119.250'
 
-logger = get_logger(log_level='INFO')
+test_logger = get_logger(log_level=LOG_LEVEL)
 
 
 @pytest.fixture(scope='module')
@@ -37,6 +39,7 @@ def client_fixture() -> PyAosSwitchClient:
     Test fixture for api-client.
     """
     client = CONFIG.get_apiclient_from_file(ip_addr=SWITCH_IP)
+    client.log_level = LOG_LEVEL
     yield client
     # Do teardowns etc below after tests are finished
     clear_test_data()
@@ -63,7 +66,7 @@ def test_get_systemstatus(client_fixture):
     Test getting system status.
     """
     system_status = client_fixture.get_system_status()
-    logger.debug(system_status)
+    test_logger.debug(system_status)
     assert isinstance(system_status, SystemStatus)
 
 
@@ -72,7 +75,7 @@ def test_get_mac_table(client_fixture):
     Test getting mac-address table.
     """
     mac_table = client_fixture.get_mac_table()
-    logger.debug(mac_table)
+    test_logger.debug(mac_table)
     assert isinstance(mac_table, MacAddressTable)
     assert isinstance(mac_table.entries[0], MacTableElement)
 
@@ -83,10 +86,16 @@ def test_get_ports_info(client_fixture):
     Contains vlan info, dot1x_auth, mac_auth, lacp settings.
     """
     port_info = client_fixture.get_ports_info()
-    logger.info(f'port-info: {port_info}')
-    # TODO: varför är port_info tom ? men port_list har data ?
-    for port in port_info.port_list:
-        logger.info(f'Port: {port}')
+    test_logger.debug('port-info: %s', port_info)
     assert isinstance(port_info, PortInfo)
-    assert isinstance(port_info.port_list[0], Port)
-    # TODO: skriv mer detaljerade tests för denna ?
+
+    for port in port_info.port_list:
+        assert isinstance(port, Port)
+        assert isinstance(port.port_id, str)
+        assert port.untagged is None or isinstance(port.untagged, int)
+        assert port.tagged is None or isinstance(port.tagged, List)
+        if isinstance(port.tagged, list):
+            for tag_vlan in port.tagged:
+                assert isinstance(tag_vlan, int)
+        assert port.lacp_status is None or isinstance(port.lacp_status, str)
+        assert port.trunk_group is None or isinstance(port.trunk_group, str)

@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 
 from .pyaos_switch_client import PyAosSwitchClient
 
@@ -40,6 +40,7 @@ class PortInfo(BaseModel):
         port_info.port_list = port_info.get_port_data(api_client)
         return port_info
 
+    @classmethod
     def get_port_data(self, api_client: PyAosSwitchClient):
         ports = self.get_ports_jsondata(api_client)
         dot1x_json = self.get_dot1x_json_data(api_client)
@@ -68,40 +69,46 @@ class PortInfo(BaseModel):
         return portdata_list
 
     # Define the property getter and setter for port_list
+    @computed_field
     @property
-    def port_list(self):
+    def port_list(self) -> List[Port]:
         return self._port_list
 
     @port_list.setter
     def port_list(self, value):
         self._port_list = value
 
-    # Define the remaining methods as before
-    def get_ports_jsondata(self, api_client: PyAosSwitchClient) -> List[dict]:
+    @classmethod
+    def get_ports_jsondata(cls, api_client: PyAosSwitchClient) -> List[dict]:
         data = api_client.get('ports')
         return data['port_element']
 
-    def get_dot1x_json_data(self, api_client: PyAosSwitchClient) -> List[dict]:
+    @classmethod
+    def get_dot1x_json_data(cls, api_client: PyAosSwitchClient) -> List[dict]:
         data = api_client.get('dot1x/authenticator')['dot1x_authenticator_port_element']
         return data
 
-    def get_macauth_json_data(self, api_client: PyAosSwitchClient) -> List[dict]:
+    @classmethod
+    def get_macauth_json_data(cls, api_client: PyAosSwitchClient) -> List[dict]:
         data = api_client.get('mac-authentication/port')[
             'mac_authentication_port_element'
         ]
         return data
 
-    def get_vlan_json_data(self, api_client: PyAosSwitchClient) -> List[dict]:
+    @classmethod
+    def get_vlan_json_data(cls, api_client: PyAosSwitchClient) -> List[dict]:
         data = api_client.get('vlans-ports')['vlan_port_element']
         return data
 
-    def vlan_untagged(self, port_id: str, vlan_json_data: List[dict]) -> Optional[int]:
+    @classmethod
+    def vlan_untagged(cls, port_id: str, vlan_json_data: List[dict]) -> Optional[int]:
         for entry in vlan_json_data:
             if entry['port_id'] == port_id and entry['port_mode'] == 'POM_UNTAGGED':
                 return entry['vlan_id']
 
+    @classmethod
     def vlan_tagged(
-        self, port_id: str, vlan_json_data: List[dict]
+        cls, port_id: str, vlan_json_data: List[dict]
     ) -> Optional[List[int]]:
         tagged_vlans = []
         for entry in vlan_json_data:
@@ -114,7 +121,8 @@ class PortInfo(BaseModel):
         if tagged_vlans:
             return tagged_vlans
 
-    def dot1x_enabled(self, port_id: str, dot1x_json: List[dict]) -> bool:
+    @classmethod
+    def dot1x_enabled(cls, port_id: str, dot1x_json: List[dict]) -> bool:
         for entry in dot1x_json:
             if (
                 entry['port_id'] == port_id
@@ -123,7 +131,8 @@ class PortInfo(BaseModel):
                 return True
         return False
 
-    def macauth_enabled(self, port_id: str, macauth_json: List[dict]) -> bool:
+    @classmethod
+    def macauth_enabled(cls, port_id: str, macauth_json: List[dict]) -> bool:
         for entry in macauth_json:
             if (
                 entry['port_id'] == port_id

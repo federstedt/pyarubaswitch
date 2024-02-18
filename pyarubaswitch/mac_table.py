@@ -19,7 +19,7 @@ class MacAddressTable(BaseModel):
         json_data = api_client.get('mac-table')
         mac_table_entry_elements = []
 
-        if api_client.rest_verion_int > 2 and 'mac_table_entry_element' in json_data:
+        if api_client.rest_version_int > 2 and 'mac_table_entry_element' in json_data:
             mac_table_entry_elements = json_data['mac_table_entry_element']
         else:
             api_client.logger.info(

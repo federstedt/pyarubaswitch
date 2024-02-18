@@ -20,35 +20,32 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class PyAosSwitchClient(object):
+    """ArubaOS-Switch API client."""
+
     def __init__(
         self,
-        ip_addr,
-        username,
-        password,
-        SSL=False,
-        timeout=10,
-        validate_ssl=False,
-        rest_version=7,
+        ip_addr: str,
+        username: str,
+        password: str,
+        SSL: bool = False,
+        timeout: int = 10,
+        validate_ssl: bool = False,
+        rest_version: int = 7,
     ):
-        """ArubaOS-Switch API client."""
-
-        self.session = None
         self.__ip_addr = ip_addr
-        self.timeout = timeout
+        self.__timeout = timeout
         self.__ssl = SSL
-        self.validate_ssl = validate_ssl
+        self.__validate_ssl = validate_ssl
+
         # set rest-api version
-        self.rest_verion_int = rest_version
-        self.version = 'v' + str(rest_version)
-        if rest_version < 4:
-            self.legacy_api = True
-        else:
-            self.legacy_api = False
-
+        self.__version = self.parse_restver(rest_version)
+        # cookie (used pre version7 of API)
         self.cookie = None
+        # Requests Session
+        self.session = None
 
-        self.username = username
-        self.password = password
+        self.__username = username
+        self.__password = password
 
         self.__log_level = 'warning'
         if self.log_level.upper() == 'DEBUG':
@@ -114,6 +111,136 @@ class PyAosSwitchClient(object):
     @property
     def api_url(self):
         return f'{self.protocol}://{self.ip_addr}/rest/{self.version}/'
+
+    @property
+    def timeout(self):
+        """
+        Timout (seconds) value of api-client.
+        """
+        return self.__timeout
+
+    @timeout.setter
+    def timeout(self, value: int):
+        """
+        Set timeout value of api-client to value.
+
+        Args:
+            value(int): Seconds.
+        """
+        self.__timeout = value
+
+    @property
+    def ssl(self):
+        """
+        Use SSL for API communications ?
+        Boolean.
+        """
+        return self.__ssl
+
+    @ssl.setter
+    def ssl(self, value):
+        """
+        Set ssl property of api-client.
+
+        Args:
+            value(bool): Use SSL, True or False.
+        """
+        self.__ssl = value
+
+    @property
+    def validate_ssl(self):
+        """
+        Validate the SSL-cert of the endpoint ?
+        """
+        return self.__validate_ssl
+
+    @validate_ssl.setter
+    def validate_ssl(self, value: bool):
+        """
+        Set validate_ssl.
+        Args:
+            value(bool): Validate SSL certificate, True or False.
+        """
+        self.__validate_ssl = value
+
+    @property
+    def version(self) -> str:
+        """
+        Rest API version in string format.
+        e.g. v5 or v7 etc.
+        """
+        return self.__version
+
+    @version.setter
+    def version(self, value: int) -> str:
+        """
+        Parse provided integer to version string.
+        e.g v7 from value: 7
+
+        Returns:
+            version(str): v7 from value 7
+        """
+        return self.parse_restver(value=value)
+
+    def parse_restver(self, value: int) -> str:
+        """
+        Parse provided integer to version string.
+        e.g v7 from value: 7
+
+        Returns:
+            version(str): v7 from value 7
+        """
+        return 'v' + str(value)
+
+    @property
+    def rest_version_int(self):
+        """
+        Rest version of API in integer format.
+        """
+        return int(self.version.replace('v', ''))
+
+    @property
+    def legacy_api(self) -> bool:
+        """
+        Set legacy_api attribute.
+        We define rest version before version7 as legacy since it does not
+        use session cookies. Also before v7 there where big slowdowns using HTTPS.
+        """
+        if self.rest_version_int < 6:
+            return True
+        else:
+            return False
+
+    @property
+    def username(self) -> str:
+        """
+        UserName to use communicating with switch-api.
+        """
+        return self.__username
+
+    @username.setter
+    def username(self, name):
+        """
+        Set username to name.
+
+        Args:
+            name(str): Name of User.
+        """
+        self.__username = name
+
+    @property
+    def password(self) -> str:
+        """
+        Password of self.username user to use with switch-api.
+        """
+        return self.__password
+
+    @password.setter
+    def password(self, value: str):
+        """
+        Set password to value(str)
+        """
+        self.__password = value
 
     def output_settings(self):
         """
@@ -240,22 +367,14 @@ class PyAosSwitchClient(object):
         versions = self.get_rest_version()
         if versions:
             latest_ver = versions['version_element'][-1]['version']
-            # remove .X from v1.0
 
+            # remove .X from v1.0
             split_string = latest_ver.split('.', 1)
             latest_ver = split_string[0]
-            # set self.api_version to latest supported
-            self.version = latest_ver
+            # set self.version to latest supported
+            self.version = int(latest_ver.replace('v', ''))
             # refresh api url with latest version
             self.set_api_url()
-
-            # remove v , convert to int
-            self.rest_verion_int = int(latest_ver.replace('v', ''))
-            # > ver7 not equals legacy logins without session cookie
-            if self.rest_verion_int > 6:
-                self.legacy_api = False
-            elif self.rest_verion_int < 6:
-                self.legacy_api = True
         else:
             raise APIClientError(
                 f'Error getting API-version from switch. Cannot parse: {versions}'
