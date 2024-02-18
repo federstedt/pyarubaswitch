@@ -36,7 +36,7 @@ class ConfigReader(object):
         return data
 
     def get_apiclient_from_file(
-        self, ip_addr: str, verbose: bool = False, SSL: bool = False, timeout: int = 15
+        self, ip_addr: str, SSL: bool = False, timeout: int = 15
     ) -> PyAosSwitchClient:
         """
         Takes yaml file, returns ArubaSwitchClient object
@@ -51,7 +51,6 @@ class ConfigReader(object):
             ip_addr=ip_addr,
             username=self.username,
             password=self.password,
-            verbose=verbose,
             SSL=SSL,
             timeout=timeout,
         )
