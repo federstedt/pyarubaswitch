@@ -2,9 +2,7 @@ from pyarubaswitch.config_reader import ConfigReader
 
 
 def main():
-    client = ConfigReader('vars.yaml').get_apiclient_from_file(
-        '192.168.119.250', verbose=True
-    )
+    client = ConfigReader('vars.yaml').get_apiclient_from_file('192.168.119.250')
 
     client.login()
     client.log_level()

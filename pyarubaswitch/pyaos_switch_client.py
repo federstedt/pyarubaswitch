@@ -1,5 +1,6 @@
 # Session based Aruba Switch REST-API client
 import json
+import logging
 
 import requests
 
@@ -68,6 +69,8 @@ class PyAosSwitchClient(object):
         """
         if isinstance(level, str):
             self.__log_level = level
+            if isinstance(self.logger, logging.Logger):
+                self.logger.setLevel()  # TODO: typo ? detta är orginal klassen
         else:
             raise APIClientError('logging level provided is not a string.')
 
