@@ -21,14 +21,6 @@ class LLDPTable(BaseModel):
     access_points: List[LldpNeighbour] = []
 
 
-class Transceiver(BaseModel):
-    part_number: str
-    port_id: int
-    product_number: str
-    serial_number: str
-    trans_type: str
-
-
 class SntpServer(BaseModel):
     address: Optional[str] = None
     prio: Optional[int] = None

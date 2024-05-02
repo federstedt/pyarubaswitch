@@ -14,6 +14,31 @@ class Port(BaseModel):
     trunk_group: Optional[str] = None
     lacp_status: Optional[str] = None
 
+class PortStats(BaseModel):
+    id: str
+    name: str
+    packets_tx: int
+    packets_rx: int
+    bytes_tx: int
+    bytes_rx: int
+    throughput_tx_bps: int
+    throughput_rx_bps: int
+    error_tx: int
+    error_rx: int
+    drop_tx: int
+    port_speed_mbps: int
+
+class PortStatistics(BaseModel):
+    port_list: List[PortStats]
+    @classmethod
+    def from_api(cls, api_client: PyAosSwitchClient) -> 'PortInfo':
+        port_elements = cls.get_port_statistics(api_client)
+        port_list = [PortStats(**entry) for entry in port_elements]
+        return cls(port_list=port_list)
+    
+    @classmethod
+    def get_port_statistics(cls,api_client:PyAosSwitchClient) -> 'PortStatistics':
+        return api_client.get('port-statistics')['port_statistics_element']
 
 class PortInfo(BaseModel):
     port_list: List[Port]

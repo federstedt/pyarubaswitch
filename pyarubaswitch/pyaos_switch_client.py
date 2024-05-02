@@ -476,3 +476,34 @@ class PyAosSwitchClient(object):
         from .port_info import PortInfo
 
         return PortInfo.from_api(self)
+
+    def get_port_statistics(self):
+        """
+        Get PortStatistics from all switchports.
+
+        Returns:
+            PortStatistics(list of Port objects)
+        """
+
+        from .port_info import PortStatistics
+        return PortStatistics.from_api(self)
+
+    def get_transceivers(self):
+        """
+        Get Transceivers.
+
+        Returns:
+            Transceiver(list of transceivers objects)
+        """
+        from .interface_info import GetTransceivers
+        return GetTransceivers.from_api(self)
+    
+
+    def get_interfaces(self):
+        """
+        Get Interfaces.
+
+        Return Interfaces(list of interface objects)
+        """
+        from.interface_info import GetInterfaces
+        return GetInterfaces.from_api(self)
