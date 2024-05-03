@@ -11,11 +11,11 @@ class Transceiver(BaseModel):
     serial_number: str
     trans_type: str
 
-class GetTransceivers(BaseModel):
+class Transceivers(BaseModel):
     transceiver_list: List[Transceiver]
 
     @classmethod
-    def from_api(cls, api_client: PyAosSwitchClient) -> 'GetTransceivers':
+    def from_api(cls, api_client: PyAosSwitchClient) -> 'Transceivers':
         transceiver_elements = cls.get_transceivers(api_client)
         return cls(transceiver_list=transceiver_elements)
 
@@ -39,10 +39,10 @@ class Interface(BaseModel)    :
     is_flow_control_enabled: bool
     is_dsnoop_port_trusted: bool
 
-class GetInterfaces(BaseModel):
+class Interfaces(BaseModel):
     interfaces_list: List[Interface]
     @classmethod
-    def from_api(cls, api_client: PyAosSwitchClient) -> 'GetInterfaces':
+    def from_api(cls, api_client: PyAosSwitchClient) -> 'Interfaces':
         ports = cls.get_interfaces(api_client)
         interfaces_list = [Interface(**entry) for entry in ports]
         return cls(interfaces_list=interfaces_list)

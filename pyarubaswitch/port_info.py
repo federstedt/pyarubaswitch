@@ -31,7 +31,7 @@ class PortStats(BaseModel):
 class PortStatistics(BaseModel):
     port_list: List[PortStats]
     @classmethod
-    def from_api(cls, api_client: PyAosSwitchClient) -> 'PortInfo':
+    def from_api(cls, api_client: PyAosSwitchClient) -> List[PortStats]:
         port_elements = cls.get_port_statistics(api_client)
         port_list = [PortStats(**entry) for entry in port_elements]
         return cls(port_list=port_list)

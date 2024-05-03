@@ -495,8 +495,8 @@ class PyAosSwitchClient(object):
         Returns:
             Transceiver(list of transceivers objects)
         """
-        from .interface_info import GetTransceivers
-        return GetTransceivers.from_api(self)
+        from .interface_info import Transceivers
+        return Transceivers.from_api(self)
     
 
     def get_interfaces(self):
@@ -505,5 +505,5 @@ class PyAosSwitchClient(object):
 
         Return Interfaces(list of interface objects)
         """
-        from.interface_info import GetInterfaces
-        return GetInterfaces.from_api(self)
+        from .interface_info import Interfaces
+        return Interfaces.from_api(self)
