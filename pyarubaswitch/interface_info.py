@@ -1,22 +1,56 @@
-from .models import Transceiver
+from typing import List, Optional
 
-class InterfaceInfo(object):
+from pydantic import BaseModel
 
-    def __init__(self, api_client):
-        self.api_client = api_client
+from .pyaos_switch_client import PyAosSwitchClient
 
+class Transceiver(BaseModel):
+    part_number: str
+    port_id: int
+    product_number: str
+    serial_number: str
+    trans_type: str
 
-    def get_transceivers(self):
+class Transceivers(BaseModel):
+    transceiver_list: List[Transceiver]
+
+    @classmethod
+    def from_api(cls, api_client: PyAosSwitchClient) -> 'Transceivers':
+        transceiver_elements = cls.get_transceivers(api_client)
+        return cls(transceiver_list=transceiver_elements)
+
+    @classmethod
+    def get_transceivers(cls, api_client: PyAosSwitchClient) -> List[dict]:
         '''
         Get transiervers on switch
         '''
-        jsondata = self.api_client.get('transceivers')
+        return api_client.get('transceivers')['transceiver_element']
 
-        if not self.api_client.error:
-            transceivers = []
-            for entry in jsondata["transceiver_element"]:
-                trans = Transceiver(part_number=entry["part_number"],port_id=entry["port_id"],product_number=entry["product_number"],serial_number=entry["serial_number"],trans_type=entry["type"])
-                transceivers.append(trans)
-            return transceivers
-        else:
-            print(self.api_client.error)
+class Interface(BaseModel)    :
+    uri: str
+    id: str
+    name: Optional[str]
+    is_port_enabled: bool
+    is_port_up: bool
+    config_mode: str
+    trunk_mode: str
+    lacp_status: str
+    trunk_group: str
+    is_flow_control_enabled: bool
+    is_dsnoop_port_trusted: bool
+
+class Interfaces(BaseModel):
+    interfaces_list: List[Interface]
+    @classmethod
+    def from_api(cls, api_client: PyAosSwitchClient) -> 'Interfaces':
+        ports = cls.get_interfaces(api_client)
+        interfaces_list = [Interface(**entry) for entry in ports]
+        return cls(interfaces_list=interfaces_list)
+
+    @classmethod
+    def get_interfaces(cls, api_client: PyAosSwitchClient):
+        '''
+        Get interfaces on switch
+        '''
+
+        return api_client.get('ports')['port_element']
