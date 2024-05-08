@@ -10,26 +10,34 @@ class MacTable(BaseModel):
     port_id: str
     vlan_id: int
 
+
 class MacAddressTable(BaseModel):
     mac_table: List[MacTable]
+
     @classmethod
-    def from_api(cls, api_client:PyAosSwitchClient) -> List[MacTable]:
+    def from_api(cls, api_client: PyAosSwitchClient) -> List[MacTable]:
         mac_elements = cls.get_mac_table(api_client)
         mac_table = [MacTable(**entry) for entry in mac_elements]
         return cls(mac_table=mac_table)
-    
+
     @classmethod
-    def get_mac_table(cls,api_client:PyAosSwitchClient) -> 'MacAddressTable':
+    def get_mac_table(cls, api_client: PyAosSwitchClient) -> 'MacAddressTable':
         return api_client.get('mac-table')['mac_table_entry_element']
-    
+
+
 class InterfaceMacTable(BaseModel):
     mac_table: List[MacTable]
+
     @classmethod
-    def from_api(cls, api_client:PyAosSwitchClient) -> List[MacTable]:
-        mac_elements = cls.get_interface_mac_table(api_client)
+    def from_api(cls, api_client: PyAosSwitchClient, port_id) -> List[MacTable]:
+        mac_elements = cls.get_interface_mac_table(api_client, port_id)
         mac_table = [MacTable(**entry) for entry in mac_elements]
         return cls(mac_table=mac_table)
-    
+
     @classmethod
-    def get_interface_mac_table(cls,api_client:PyAosSwitchClient) -> 'InterfaceMacTable':
-        return api_client.get('mac-table')['mac_table_entry_element']
+    def get_interface_mac_table(
+        cls, api_client: PyAosSwitchClient, port_id
+    ) -> 'InterfaceMacTable':
+        return api_client.get(f'ports/{port_id}/mac-table')[
+            'mac_table_entry_element'
+        ]
