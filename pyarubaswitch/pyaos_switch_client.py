@@ -466,6 +466,17 @@ class PyAosSwitchClient(object):
 
         return MacAddressTable.from_api(self)
 
+    def get_interface_mac_table(self, port_id):
+        """
+        Get mac-address table from interface using classmethod.
+
+        Returns:
+            MacAddressTable object containing MacTableElement.
+        """
+        from .mac_table import InterfaceMacTable
+
+        return InterfaceMacTable.from_api(self, port_id)
+
     def get_ports_info(self):
         """
         Get PortInfo from all switchports.
@@ -486,6 +497,7 @@ class PyAosSwitchClient(object):
         """
 
         from .port_info import PortStatistics
+
         return PortStatistics.from_api(self)
 
     def get_transceivers(self):
@@ -496,8 +508,8 @@ class PyAosSwitchClient(object):
             Transceiver(list of transceivers objects)
         """
         from .interface_info import Transceivers
+
         return Transceivers.from_api(self)
-    
 
     def get_interfaces(self):
         """
@@ -506,4 +518,5 @@ class PyAosSwitchClient(object):
         Return Interfaces(list of interface objects)
         """
         from .interface_info import Interfaces
+
         return Interfaces.from_api(self)

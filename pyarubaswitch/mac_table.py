@@ -1,39 +1,43 @@
-from typing import List, Optional
+from typing import List
 
 from pydantic import BaseModel
 
 from .pyaos_switch_client import PyAosSwitchClient
 
 
-class MacTableElement(BaseModel):
+class MacTable(BaseModel):
     mac_address: str
     port_id: str
     vlan_id: int
 
 
 class MacAddressTable(BaseModel):
-    entries: List[MacTableElement]
+    mac_table: List[MacTable]
 
     @classmethod
-    def from_api(cls, api_client: PyAosSwitchClient) -> 'MacAddressTable':
-        json_data = api_client.get('mac-table')
-        mac_table_entry_elements = []
+    def from_api(cls, api_client: PyAosSwitchClient) -> List[MacTable]:
+        mac_elements = cls.get_mac_table(api_client)
+        mac_table = [MacTable(**entry) for entry in mac_elements]
+        return cls(mac_table=mac_table)
 
-        if api_client.rest_version_int > 2 and 'mac_table_entry_element' in json_data:
-            mac_table_entry_elements = json_data['mac_table_entry_element']
-        else:
-            api_client.logger.info(
-                'mac_table_entry_element not found in json dict. Old API-version ?'
-            )
-            mac_table_entry_elements = json_data.get('mac_table', [])
+    @classmethod
+    def get_mac_table(cls, api_client: PyAosSwitchClient) -> 'MacAddressTable':
+        return api_client.get('mac-table')['mac_table_entry_element']
 
-        entries = [
-            MacTableElement(
-                mac_address=entry.get('mac_address'),
-                port_id=entry.get('port_id'),
-                vlan_id=entry.get('vlan_id'),
-            )
-            for entry in mac_table_entry_elements
+
+class InterfaceMacTable(BaseModel):
+    mac_table: List[MacTable]
+
+    @classmethod
+    def from_api(cls, api_client: PyAosSwitchClient, port_id) -> List[MacTable]:
+        mac_elements = cls.get_interface_mac_table(api_client, port_id)
+        mac_table = [MacTable(**entry) for entry in mac_elements]
+        return cls(mac_table=mac_table)
+
+    @classmethod
+    def get_interface_mac_table(
+        cls, api_client: PyAosSwitchClient, port_id
+    ) -> 'InterfaceMacTable':
+        return api_client.get(f'ports/{port_id}/mac-table')[
+            'mac_table_entry_element'
         ]
-
-        return cls(entries=entries)

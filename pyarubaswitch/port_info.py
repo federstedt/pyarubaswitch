@@ -13,6 +13,9 @@ class Port(BaseModel):
     tagged: Optional[List[int]] = None
     trunk_group: Optional[str] = None
     lacp_status: Optional[str] = None
+    is_port_enabled: bool
+    is_port_up: bool
+
 
 class PortStats(BaseModel):
     id: str
@@ -28,17 +31,20 @@ class PortStats(BaseModel):
     drop_tx: int
     port_speed_mbps: int
 
+
 class PortStatistics(BaseModel):
     port_list: List[PortStats]
+
     @classmethod
     def from_api(cls, api_client: PyAosSwitchClient) -> List[PortStats]:
         port_elements = cls.get_port_statistics(api_client)
         port_list = [PortStats(**entry) for entry in port_elements]
         return cls(port_list=port_list)
-    
+
     @classmethod
-    def get_port_statistics(cls,api_client:PyAosSwitchClient) -> 'PortStatistics':
+    def get_port_statistics(cls, api_client: PyAosSwitchClient) -> 'PortStatistics':
         return api_client.get('port-statistics')['port_statistics_element']
+
 
 class PortInfo(BaseModel):
     port_list: List[Port]
@@ -66,6 +72,8 @@ class PortInfo(BaseModel):
                     tagged=cls.get_tagged_vlans(port_id, vlan_json),
                     trunk_group=entry.get('trunk_group'),
                     lacp_status=entry.get('lacp_status'),
+                    is_port_up=entry['is_port_up'],
+                    is_port_enabled=entry['is_port_enabled'],
                 )
             )
 
